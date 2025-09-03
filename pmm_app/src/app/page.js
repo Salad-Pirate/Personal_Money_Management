@@ -23,6 +23,7 @@ export default function Home() {
     { id: 3, name: "Salary", type: "income" },
     { id: 4, name: "Freelance", type: "income" },
   ];
+
   const paymentMethods = [
     { id: 1, name: "Cash" },
     { id: 2, name: "Bank" },
@@ -53,6 +54,7 @@ export default function Home() {
         {currentPage === "dashboard" && (
           <Dashboard transactions={transactions} />
         )}
+
         {currentPage === "add-transaction" && (
           <AddTransaction
             categories={categories}
@@ -61,6 +63,7 @@ export default function Home() {
             onCancel={() => setCurrentPage("dashboard")}
           />
         )}
+
         {currentPage === "transactions" && (
           <div className="max-w-3xl mx-auto">
             <h1 className="text-xl font-bold mb-4">All Transactions</h1>
@@ -77,6 +80,7 @@ export default function Home() {
             </ul>
           </div>
         )}
+
         {currentPage === "settings" && (
           <div className="max-w-3xl mx-auto">
             <h1 className="text-xl font-bold">Settings</h1>
