@@ -7,6 +7,7 @@ import { Dashboard } from "./components/dashboard";
 import { Navigation } from "./components/navigation";
 import { AddTransaction } from "./components/addtransaction";
 import { TransactionsList } from "./components/transactionlist";
+import {Settings_PPM} from "./components/settings"
 
 export default function Home() {
   const [user, setUser] = useLocalStorage("currentUser", null);
@@ -17,18 +18,19 @@ export default function Home() {
     { id: 2, type: "expense", amount: 300, category: "Food", date: "2025-09-02T12:00", paymentMethod: "Cash" },
   ]);
 
-  const categories = [
-    { id: 1, name: "Food", type: "expense", color: "#F87171" },
-    { id: 2, name: "Transport", type: "expense", color: "#60A5FA" },
-    { id: 3, name: "Salary", type: "income", color: "#34D399" },
-    { id: 4, name: "Freelance", type: "income", color: "#FBBF24" },
-  ];
+  const [categories, setCategories] = useLocalStorage('categories', [
+        { id: '1', name: 'Food & Dining', type: 'expense', color: '#EF4444' },
+        { id: '2', name: 'Transportation', type: 'expense', color: '#F97316' },
+        { id: '3', name: 'Shopping', type: 'expense', color: '#8B5CF6' },
+        { id: '4', name: 'Salary', type: 'income', color: '#10B981' },
+        { id: '5', name: 'Freelance', type: 'income', color: '#06B6D4' },
+    ]);
 
-  const paymentMethods = [
-    { id: 1, name: "Cash" },
-    { id: 2, name: "Bank" },
-    { id: 3, name: "Credit Card" },
-  ];
+    const [paymentMethods, setPaymentMethods] = useLocalStorage('paymentMethods', [
+        { id: '1', name: 'Credit Card', color: '#3B82F6' },
+        { id: '2', name: 'Cash', color: '#6B7280' },
+        { id: '3', name: 'Debit Card', color: '#8B5CF6' },
+    ]);
 
   const handleAddTransaction = (transaction) => {
     setTransactions([...transactions, { id: transactions.length + 1, ...transaction }]);
@@ -38,7 +40,6 @@ export default function Home() {
   if (!user) return <Login onLogin={setUser} />;
 
   return (
-
     <>
       <Navigation currentPage={currentPage} onPageChange={setCurrentPage} user={user} />
       <main className="pt-20 pb-20 px-4">
@@ -59,15 +60,15 @@ export default function Home() {
           />
         )}
         {currentPage === "settings" && (
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-xl font-bold">Settings</h1>
-            <button
-              onClick={() => setUser(null)}
-              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg"
-            >
-              Logout
-            </button>
-          </div>
+            <Settings_PPM
+                categories={categories}
+                paymentMethods={paymentMethods}
+                onUpdateCategories={setCategories}
+                onUpdatePaymentMethods={setPaymentMethods}
+                user={user}
+                onLogout={() => setUser(null)}
+            />
+        
         )}
       </main>
     </>
