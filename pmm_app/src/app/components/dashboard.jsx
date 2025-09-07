@@ -91,7 +91,6 @@ export function Dashboard({ transactions }) {
     });
   };
 
-ห
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -206,7 +205,62 @@ export function Dashboard({ transactions }) {
             </div>
           </div>
 
-          {/* Expense by Category Chart - กราฟแสดงรายจ่ายตามหมวดหมู่ */}
+          {/* Daily Income/Expense Trend Chart - กราฟเส้นรายรับรายจ่ายรายวัน */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Daily Income & Expense Trend</h3>
+              <p className="text-sm text-gray-600">รายรับ-รายจ่ายรายวันย้อนหลัง 30 วัน</p>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dailyChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={formatChartDate}
+                    stroke="#6b7280"
+                    fontSize={12}
+                  />
+                  <YAxis
+                    tickFormatter={(value) => `$${value.toLocaleString()}`}
+                    stroke="#6b7280"
+                    fontSize={12}
+                  />
+                  <Tooltip
+                    formatter={(value, name) => [formatCurrency(value), legendMap[name] || name]}
+                    labelFormatter={(label) => `วันที่: ${formatChartDate(label)}`}
+                    contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                  />
+                  <Legend
+                    formatter={(value) => value === 'income' ? 'รายรับ' : value === 'expense' ? 'รายจ่าย' : 'ยอดคงเหลือ'}
+                  />
+
+                  {/* Line for Income */}
+                  <Line
+                    type="monotone"
+                    dataKey="income"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                    name="รายรับ"
+                  />
+
+                  {/* Line for Expense */}
+                  <Line
+                    type="monotone"
+                    dataKey="expense"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                    name="รายจ่าย"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
 
 
         </div>
