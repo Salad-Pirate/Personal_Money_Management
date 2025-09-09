@@ -38,20 +38,54 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   if (validateForm()) {
+  //     onAddTransaction({
+  //       type: transactionType,
+  //       amount: parseFloat(formData.amount),
+  //       category: formData.category,
+  //       paymentMethod: formData.paymentMethod,
+  //       date: formData.date,
+  //       location: formData.location,
+  //       note: formData.note,
+  //     });
+  //   }
+  // };
+
+    const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      onAddTransaction({
-        type: transactionType,
-        amount: parseFloat(formData.amount),
-        category: formData.category,
-        paymentMethod: formData.paymentMethod,
-        date: formData.date,
-        location: formData.location,
-        note: formData.note,
+    if (!validateForm()) return;
+
+    const payload = {
+      type: transactionType,
+      amount: parseFloat(formData.amount),
+      category: formData.category,
+      paymentMethod: formData.paymentMethod,
+      date: formData.date,             
+      location: formData.location,
+      note: formData.note,
+    };
+
+    try {
+      const res = await fetch("http://localhost:8080/transactions/post-transaction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json?.() ?? await res.text();
+
+      console.log("BE response:", data);
+      alert("Sucessful");
+    } catch (err) {
+      console.error(err);
+      alert("Unsuccessful");
     }
   };
+
+
+
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
