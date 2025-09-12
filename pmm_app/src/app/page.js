@@ -13,6 +13,8 @@ export default function Home() {
   const [user, setUser] = useLocalStorage("currentUser", null);
   const [currentPage, setCurrentPage] = useState("dashboard");
 
+
+
   const [transactions, setTransactions] = useState([
     { id: 1, type: "income", amount: 1200, category: "Salary", date: "2025-09-01T10:30", paymentMethod: "Bank" },
     { id: 2, type: "expense", amount: 300, category: "Food", date: "2025-09-02T12:00", paymentMethod: "Cash" },
