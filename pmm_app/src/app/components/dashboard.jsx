@@ -2,7 +2,37 @@ import { useMemo } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Calendar } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
-export function Dashboard({ transactions }) {
+
+
+//Add Normalize Columns name function
+function normalizeTransaction(t, idx) {
+  const rawDate =
+    t.date ?? t.transaction_time ?? t.datetime ?? t.occurredAt ?? null;
+
+  const isoDate = rawDate
+    ? new Date(rawDate).toISOString()
+    : new Date().toISOString();
+
+  return {
+    id: t.transaction_id ?? t.id ?? String(idx),
+    type: (t.type ?? t.kind ?? '').toLowerCase(),       // 'income' | 'expense'
+    amount: Number(t.amount ?? 0),
+    paymentMethod: t.paymentMethod ?? t.payment_method ?? '',
+    date: isoDate,
+    category:
+      t.category ??
+      ((t.type ?? '').toLowerCase() === 'income' ? 'รายรับทั่วไป' : 'รายจ่ายทั่วไป'),
+    note: t.note ?? '',
+  };
+}
+
+
+export function Dashboard({ transactions: rawTransactions }) {
+  const transactions = useMemo(
+    () => (rawTransactions ?? []).map(normalizeTransaction),
+    [rawTransactions]
+  );
+
   const currentMonth = new Date().toISOString().slice(0, 7);
   const legendMap = {
     income: "รายรับ",
@@ -28,8 +58,15 @@ export function Dashboard({ transactions }) {
     return { totalIncome, totalExpenses, balance, transactionCount: currentMonthTransactions.length };
   }, [transactions, currentMonth]);
 
+  // const recentTransactions = useMemo(() =>
+  //   transactions
+  //     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  //     .slice(0, 5),
+  //   [transactions]
+  // );
+
   const recentTransactions = useMemo(() =>
-    transactions
+    [...transactions]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5),
     [transactions]

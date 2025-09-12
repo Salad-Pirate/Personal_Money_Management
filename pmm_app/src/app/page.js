@@ -1,6 +1,6 @@
 'use client';
 import { useLocalStorage } from "usehooks-ts";
-import { useState } from "react";
+import { useState, useEffect} from "react";
 
 import Login from "./(auth)/AuthPage/page";
 import { Dashboard } from "./components/dashboard";
@@ -13,10 +13,26 @@ export default function Home() {
   const [user, setUser] = useLocalStorage("currentUser", null);
   const [currentPage, setCurrentPage] = useState("dashboard");
 
-  const [transactions, setTransactions] = useState([
-    { id: 1, type: "income", amount: 1200, category: "Salary", date: "2025-09-01T10:30", paymentMethod: "Bank" },
-    { id: 2, type: "expense", amount: 300, category: "Food", date: "2025-09-02T12:00", paymentMethod: "Cash" },
-  ]);
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    async function fetchTransactions() {
+      try {
+        const res = await fetch("http://localhost:8080/transactions/get-transactions");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setTransactions(data);   // Spring Boot จะส่ง JSON Array กลับมา
+      } catch (err) {
+        console.error("Failed to fetch transactions:", err);
+      }
+    }
+    fetchTransactions();
+  }, []);
+
+  // const [transactions, setTransactions] = useState([
+  //   { id: 1, type: "income", amount: 1200, category: "Salary", date: "2025-09-01T10:30", paymentMethod: "Bank" },
+  //   { id: 2, type: "expense", amount: 300, category: "Food", date: "2025-09-02T12:00", paymentMethod: "Cash" },
+  // ]);
 
   const [categories, setCategories] = useLocalStorage('categories', [
         { id: '1', name: 'Food & Dining', type: 'expense', color: '#EF4444' },
