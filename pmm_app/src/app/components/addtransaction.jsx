@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { PmmContext } from '../context/PmmContext';
 import { ArrowLeft, DollarSign, Calendar, MapPin, FileText, CreditCard, Tag, Wallet, Plus, X } from 'lucide-react';
 
 export function AddTransaction({ categories, paymentMethods, onAddTransaction, onCancel }) {
-
-  const [user_Wallet, setUserWallet] = useState(["wallet1", "wallet2", "wallet3"]);
-  const [current_wallet, setCurrentWallet] = useState(user_Wallet[0] || '');
+  const { user_Wallet, setUserWallet } = useContext(PmmContext);
+  const [current_wallet, setCurrentWallet] = useState(user_Wallet[0] || null);
   const [showModal, setShowModal] = useState(false);
-  const [newWalletName, setNewWalletName] = useState('');
+  const [newWalletData, setNewWalletData] = useState({
+    name: '',
+    type: 'bank',
+    balance: 0,
+    color: '#3B82F6'
+  });
 
   const [transactionType, setTransactionType] = useState('expense');
   const [formData, setFormData] = useState({
@@ -16,7 +21,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     date: new Date().toISOString().slice(0, 16),
     location: '',
     note: '',
-    wallet: user_Wallet[0], // เพิ่ม wallet ใน formData
+    wallet: user_Wallet[0] || null, // เปลี่ยนเป็น object
   });
   const [errors, setErrors] = useState({});
 
@@ -67,7 +72,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
       date: formData.date,
       location: formData.location,
       note: formData.note,
-      wallet: formData.wallet, // ส่งค่า wallet ไป backend
+      wallet: formData.wallet.id, // ส่งเฉพาะ id ไป backend
     };
 
     try {
@@ -80,27 +85,38 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
       const data = await res.json?.() ?? await res.text();
 
       console.log("BE response:", data);
-      alert("Sucessful");
+      alert("Successful");
     } catch (err) {
       console.error(err);
       alert("Unsuccessful");
     }
   };
 
-  const Create_Wallet = () => {
-
-  };
   // ฟังก์ชันกด Add wallet
   const handleAddWallet = () => {
-    if (newWalletName.trim() !== '') {
-      const updatedWallets = [...user_Wallet, newWalletName];
+    if (newWalletData.name.trim() !== '') {
+      const newWallet = {
+        id: Date.now().toString(),
+        name: newWalletData.name,
+        type: newWalletData.type,
+        balance: parseFloat(newWalletData.balance),
+        color: newWalletData.color
+      };
+      
+      const updatedWallets = [...user_Wallet, newWallet];
       setUserWallet(updatedWallets);
-      setCurrentWallet(newWalletName);
-      setFormData({ ...formData, wallet: newWalletName });
-      setNewWalletName('');
+      setCurrentWallet(newWallet);
+      setFormData({ ...formData, wallet: newWallet });
+      setNewWalletData({
+        name: '',
+        type: 'bank',
+        balance: 0,
+        color: '#3B82F6'
+      });
       setShowModal(false);
     }
   };
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -223,31 +239,35 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Your Wallet *
               </label>
-              <div className='flex gap-3'>
+              <div className='flex gap-3 flex-wrap'>
                 {user_Wallet.map((wallet) => (
                   <div
-                    key={wallet}
+                    key={wallet.id}
                     onClick={() => handleWalletSelect(wallet)}
-                    className={`flex flex-col items-center justify-center w-20 
-                    border-4 h-16 rounded-2xl cursor-pointer 
-                    duration-300 hover:duration-300 ${current_wallet === wallet
+                    className={`flex flex-col items-center justify-center w-24 
+                    border-4 h-20 rounded-2xl cursor-pointer 
+                    duration-300 hover:duration-300 ${current_wallet?.id === wallet.id
                         ? 'border-green-500 bg-green-100 text-green-700'
-                        : 'border-black hover:bg-gray-100'
+                        : 'border-gray-300 hover:bg-gray-100'
                       }`}
+                    style={{ borderColor: current_wallet?.id === wallet.id ? '#10B981' : wallet.color }}
                   >
-                    <Wallet size={24} color={current_wallet === wallet ? "green" : "black"} />
-                    <div>
-                      <p className="text-xs">{wallet}</p>
+                    <div className="flex flex-col text-center justify-center items-center ">
+                      <Wallet />
+                      <p className="text-xs font-medium truncate w-20" title={wallet.name}>
+                        
+                        {wallet.name}
+                      </p>
                     </div>
                   </div>
                 ))}
                 {/* New Wallet Card */}
                 <div
                   onClick={() => setShowModal(true)}
-                  className="flex flex-col items-center justify-center w-20 border-2 border-dashed border-gray-400 h-16 rounded-2xl cursor-pointer hover:bg-gray-50"
+                  className="flex flex-col items-center justify-center w-24 border-2 border-dashed border-gray-400 h-20 rounded-2xl cursor-pointer hover:bg-gray-50"
                 >
                   <Plus size={24} color="gray" />
-                  <p className="text-sm mt-1 text-gray-500">New</p>
+                  <p className="text-xs mt-1 text-gray-500">New</p>
                 </div>
               </div>
               {errors.wallet && <p className="text-red-500 text-sm mt-1">{errors.wallet}</p>}
@@ -255,8 +275,8 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
 
             {/* Modal สำหรับเพิ่ม wallet */}
             {showModal && (
-              <div className="fixed inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center z-50">
-                <div className="bg-white rounded-xl p-6 w-80 shadow-lg relative">
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-xl p-6 w-96 shadow-lg relative">
                   {/* Close button */}
                   <button
                     onClick={() => setShowModal(false)}
@@ -266,22 +286,82 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
                   </button>
 
                   <h2 className="text-lg font-semibold mb-4">Create New Wallet</h2>
-                  <input
-                    type="text"
-                    value={newWalletName}
-                    onChange={(e) => setNewWalletName(e.target.value)}
-                    placeholder="Enter wallet name"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  />
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Wallet Name
+                      </label>
+                      <input
+                        type="text"
+                        value={newWalletData.name}
+                        onChange={(e) => setNewWalletData({ ...newWalletData, name: e.target.value })}
+                        placeholder="Enter wallet name"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Type
+                      </label>
+                      <select
+                        value={newWalletData.type}
+                        onChange={(e) => setNewWalletData({ ...newWalletData, type: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      >
+                        <option value="bank">Bank Account</option>
+                        <option value="cash">Cash</option>
+                        <option value="credit">Credit Card</option>
+                        <option value="savings">Savings</option>
+                        <option value="investment">Investment</option>
+                        <option value="digital">Digital Wallet</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Initial Balance
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={newWalletData.balance}
+                        onChange={(e) => setNewWalletData({ ...newWalletData, balance: e.target.value })}
+                        placeholder="0.00"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Color
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="color"
+                          value={newWalletData.color}
+                          onChange={(e) => setNewWalletData({ ...newWalletData, color: e.target.value })}
+                          className="w-12 h-10 border border-gray-300 rounded-lg"
+                        />
+                        <div
+                          className="w-10 h-10 rounded-lg border-2 border-gray-300"
+                          style={{ backgroundColor: newWalletData.color }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <button
                     onClick={handleAddWallet}
-                    className="mt-4 w-full bg-emerald-600 text-white rounded-lg py-2 hover:bg-emerald-700 transition-colors"
+                    className="mt-6 w-full bg-emerald-600 text-white rounded-lg py-2 hover:bg-emerald-700 transition-colors"
                   >
                     Add Wallet
                   </button>
                 </div>
               </div>
             )}
+
             {/* Date */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
