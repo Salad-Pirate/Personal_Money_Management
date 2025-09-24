@@ -1,6 +1,6 @@
 'use client';
 import { useLocalStorage } from "usehooks-ts";
-import { useState } from "react";
+import { useState,useContext } from "react";
 
 import Login from "./(auth)/AuthPage/page";
 import { Dashboard } from "./components/dashboard";
@@ -8,11 +8,11 @@ import { Navigation } from "./components/navigation";
 import { AddTransaction } from "./components/addtransaction";
 import { TransactionsList } from "./components/transactionlist";
 import {Settings_PPM} from "./components/settings"
-
+import { PmmContext } from "./context/PmmContext";
 export default function Home() {
   const [user, setUser] = useLocalStorage("currentUser", null);
   const [currentPage, setCurrentPage] = useState("dashboard");
-
+  const { setUser_id } = useContext(PmmContext)
 
 
   const [transactions, setTransactions] = useState([
@@ -41,6 +41,10 @@ export default function Home() {
 
   if (!user) return <Login onLogin={setUser} />;
 
+  const handleLogout = () =>{
+    setUser(null)
+    setUser_id(null)
+  }
   return (
     <>
       <Navigation currentPage={currentPage} onPageChange={setCurrentPage} user={user} />
@@ -68,7 +72,7 @@ export default function Home() {
                 onUpdateCategories={setCategories}
                 onUpdatePaymentMethods={setPaymentMethods}
                 user={user}
-                onLogout={() => setUser(null)}
+                onLogout={handleLogout}
             />
         
         )}

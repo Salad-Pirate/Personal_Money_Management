@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { DollarSign, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { PmmContext } from '../../context/PmmContext';
 
 const AuthPage = ({ onLogin }) => {
+    const { setUser_id } = useContext(PmmContext)
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
@@ -34,14 +36,65 @@ const AuthPage = ({ onLogin }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (validateForm()) {
-            onLogin({
-                id: '1',
-                name: formData.name || 'User',
-                email: formData.email,
-            });
+        // Login
+        if (validateForm() && isLogin) {
+            try {
+                const res = await fetch('http://localhost:8080/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "email": formData.email,
+                        "password": formData.password
+                    }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    onLogin({
+                        id: data.id,
+                        name: formData.name
+                    })
+                    setUser_id(data.id)
+                } else {
+                    console.log(data);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        // Register
+        if (validateForm() && !isLogin) {
+            try {
+                const res = await fetch('http://localhost:8080/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        "email": formData.email,
+                        "password": formData.password,
+                        "displayName": formData.name
+                    }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    onLogin({
+                        id: data.id,
+                        name: formData.name
+                    })
+                    setUser_id(data.id)
+
+                } else {
+                    console.log(data);
+                }
+            } catch (error) {
+                console.log(error);
+            }
         }
     };
 
