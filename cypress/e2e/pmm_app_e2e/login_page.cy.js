@@ -11,5 +11,12 @@ describe('login page', () => {
     cy.get(':nth-child(2) > .text-red-500').should('be.visible')
   })
 
-  
+  it('logs in successfully with valid credentials', () => {
+    
+    cy.get(':nth-child(1) > .relative > .w-full').type('abc@gmail.com')
+    
+    cy.get(':nth-child(2) > .relative > .w-full').type('123456789')
+    
+    cy.get('.bg-emerald-600').click()
+  })
 })
