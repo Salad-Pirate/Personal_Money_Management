@@ -1,50 +1,121 @@
 'use client'
 
 import React, { createContext } from 'react'
-import { useState } from 'react';
-
+import { useState, useEffect } from 'react';
+import { useLocalStorage } from "usehooks-ts";
 
 export const PmmContext = createContext();
 
 export const PmmContextProvider = (props) => {
-    // const [user_Wallet, setUserWallet] = useState(["wallet1", "wallet2", "wallet3"]);
-    const [user_Wallet, setUserWallet] = useState([
-        {
-            id: "1",
-            name: "Main Bank Account",
-            type: "bank",
-            balance: 2500.75,
-            color: "#3B82F6"
-        },
-        {
-            id: "2",
-            name: "Cash Wallet",
-            type: "cash",
-            balance: 150.00,
-            color: "#10B981"
-        },
-        {
-            id: "3",
-            name: "Credit Card",
-            type: "credit",
-            balance: -450.25,
-            color: "#EF4444"
-        },
-        {
-            id: "4",
-            name: "Savings Account",
-            type: "savings",
-            balance: 5000.00,
-            color: "#8B5CF6"
-        },
-    ]);
-    const [token, setToken] = useState(null);
+    const [user] = useLocalStorage("currentUser", null);
+    const [user_Wallet, setUserWallet] = useState([]);
+    const [userPaymet, setUserPaymet] = useState([]);
+    const [userCategory, setUserCategory] = useState([]);
     const [user_id, setUser_id] = useState(null);
-    
+    const [user_transaction , setUserTransaction] = useState([]);
+    const Get_Wallet = async () => {
+        try {
+            const res = await fetch('http://localhost:8080/wallets', {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-User-id": String(user?.id),
+                }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                console.log("Fetch Success:", data);
+                setUserWallet(data);
+            } else {
+                console.log("Fetch failed:", data);
+                setUserWallet([]);
+            }
+        } catch (error) {
+            console.log("Fail to Fetch Wallet", error);
+        };
+    }
+
+    const Get_userPaymet = async () => {
+        try {
+            const res = await fetch('http://localhost:8080/payment-methods', {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-User-id": String(user?.id),
+                }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                console.log("Fetch Success:", data);
+                setUserPaymet(data);
+            } else {
+                console.log("Fetch failed:", data);
+                setUserPaymet([]);
+            }
+        } catch (error) {
+            console.log("Fail to Fetch Payment Methods", error);
+        };
+    }
+
+
+    const Get_Category = async () => {
+        try {
+            const res = await fetch('http://localhost:8080/categories', {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-User-id": String(user?.id),
+                }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                console.log("Fetch Success:", data);
+                setUserCategory(data);
+            } else {
+                console.log("Fetch failed:", data);
+                setUserCategory([]);
+            }
+        } catch (error) {
+            console.log("Fail to Fetch Category", error);
+        };
+    }
+
+
+    const Get_Transaction = async () =>{
+        try {
+            const res = await fetch('http://localhost:8080/transactions', {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-User-id": String(user?.id),
+                }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                console.log("Fetch Success:", data);
+                setUserTransaction(data);
+            } else {
+                console.log("Fetch failed:", data);
+                setUserTransaction([]);
+            }
+        } catch (error) {
+            console.log("Fail to Fetch Category", error);
+        };
+    }
+    useEffect(() => {
+        Get_Wallet();
+        Get_userPaymet();
+        Get_Category();
+        Get_Transaction();
+    }, []);
+
 
     const value = {
-        user_Wallet, setUserWallet, user_id, setUser_id
+        user_Wallet, setUserWallet, user_id, setUser_id, userPaymet, setUserPaymet
+        ,userCategory, setUserCategory,user_transaction , setUserTransaction
     };
+
+
     return (
         <PmmContext.Provider value={value}>
             {props.children}

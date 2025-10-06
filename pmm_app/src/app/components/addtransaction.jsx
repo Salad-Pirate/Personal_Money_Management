@@ -1,8 +1,10 @@
 import { useContext, useState } from 'react';
+import { useLocalStorage } from "usehooks-ts";
 import { PmmContext } from '../context/PmmContext';
 import { ArrowLeft, DollarSign, Calendar, MapPin, FileText, CreditCard, Tag, Wallet, Plus, X } from 'lucide-react';
 
 export function AddTransaction({ categories, paymentMethods, onAddTransaction, onCancel }) {
+  const [user] = useLocalStorage("currentUser", null);
   const { user_Wallet, setUserWallet } = useContext(PmmContext);
   const [current_wallet, setCurrentWallet] = useState(user_Wallet[0] || null);
   const [showModal, setShowModal] = useState(false);
@@ -13,7 +15,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     color: '#3B82F6'
   });
 
-  const [transactionType, setTransactionType] = useState('expense');
+  const [transactionType, setTransactionType] = useState("Expense");
   const [formData, setFormData] = useState({
     amount: '',
     category: '',
@@ -25,7 +27,20 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
   });
   const [errors, setErrors] = useState({});
 
-  const availableCategories = categories.filter(cat => cat.type === transactionType);
+  const availableCategories = categories.filter(cat => cat.type == transactionType);
+
+  const formatDateForBackend = (dateString) => {
+    if (!dateString) return null;
+
+    const date = new Date(dateString); // แปลงเป็น Date object
+    const tzOffset = -date.getTimezoneOffset(); // offset นาที
+    const sign = tzOffset >= 0 ? '+' : '-';
+    const pad = (num) => String(num).padStart(2, '0');
+    const hours = pad(Math.floor(Math.abs(tzOffset) / 60));
+    const minutes = pad(Math.abs(tzOffset) % 60);
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${sign}${hours}:${minutes}`;
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -65,57 +80,99 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     if (!validateForm()) return;
 
     const payload = {
-      type: transactionType,
+      categoryId: formData.category.categoryId,
+      paymentMethodId: formData.paymentMethod.paymentMethodId,
+      walletId: formData.wallet.walletId,
       amount: parseFloat(formData.amount),
-      category: formData.category,
-      paymentMethod: formData.paymentMethod,
-      date: formData.date,
-      location: formData.location,
-      note: formData.note,
-      wallet: formData.wallet.id, // ส่งเฉพาะ id ไป backend
+      type: transactionType,
+      occuredAt: formatDateForBackend(formData.date),
+      transactionLocation: formData.location,
+      note: formData.note,// ส่งเฉพาะ id ไป backend
     };
 
+    let res;
     try {
-      const res = await fetch("http://localhost:8080/transactions/post-transaction", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      res = await fetch('http://localhost:8080/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-id': String(user?.id),
+        },
+        body: JSON.stringify({
+          ...payload,
+        }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json?.() ?? await res.text();
 
-      console.log("BE response:", data);
-      alert("Successful");
+      if (res.ok) {
+        const data = await res.json();
+        console.log("BE response:", data);
+        alert("Successful");
+        setFormData(
+          {
+            amount: '',
+            category: '',
+            paymentMethod: '',
+            date: new Date().toISOString().slice(0, 16),
+            location: '',
+            note: '',
+            wallet: user_Wallet[0] || null,
+          }
+        )
+      } else {
+        alert("UnSuccessful");
+        console.log("Error ", res);
+      }
     } catch (err) {
+      console.log(res);
       console.error(err);
       alert("Unsuccessful");
     }
   };
 
   // ฟังก์ชันกด Add wallet
-  const handleAddWallet = () => {
-    if (newWalletData.name.trim() !== '') {
-      const newWallet = {
-        id: Date.now().toString(),
-        name: newWalletData.name,
-        type: newWalletData.type,
-        balance: parseFloat(newWalletData.balance),
-        color: newWalletData.color
-      };
-      
-      const updatedWallets = [...user_Wallet, newWallet];
-      setUserWallet(updatedWallets);
-      setCurrentWallet(newWallet);
-      setFormData({ ...formData, wallet: newWallet });
-      setNewWalletData({
-        name: '',
-        type: 'bank',
-        balance: 0,
-        color: '#3B82F6'
+  const handleAddWallet = async () => {
+    if (newWalletData.name.trim() === '') return;
+
+    try {
+      const res = await fetch('http://localhost:8080/wallets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-id': String(user?.id),
+        },
+        body: JSON.stringify({
+          name: newWalletData.name,
+          type: newWalletData.type,
+          balance: parseFloat(newWalletData.balance),
+          color: newWalletData.color,
+        }),
       });
-      setShowModal(false);
+
+      const data = await res.json();
+
+      if (res.ok) {
+        const updatedWallets = [...user_Wallet, data];
+        setUserWallet(updatedWallets);
+        setCurrentWallet(data);
+        setFormData({ ...formData, wallet: data });
+
+        setNewWalletData({
+          name: '',
+          type: 'bank',
+          balance: 0,
+          color: '#3B82F6',
+        });
+        setShowModal(false);
+
+        console.log("✅ Wallet added successfully:", data);
+      } else {
+        console.error("❌ API Error:", data);
+      }
+    } catch (error) {
+      console.error(" Fetch Error:", error);
     }
   };
+
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -139,10 +196,10 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
               <button
                 type="button"
                 onClick={() => {
-                  setTransactionType('expense');
+                  setTransactionType('Expense');
                   setFormData({ ...formData, category: '' });
                 }}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${transactionType === 'expense'
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${transactionType === 'Expense'
                   ? 'bg-red-600 text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
                   }`}
@@ -152,10 +209,10 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
               <button
                 type="button"
                 onClick={() => {
-                  setTransactionType('income');
+                  setTransactionType('Income');
                   setFormData({ ...formData, category: '' });
                 }}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${transactionType === 'income'
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${transactionType === 'Income'
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
                   }`}
@@ -194,14 +251,19 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
               <div className="relative">
                 <Tag className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  value={formData.category?.categoryId || ''}
+                  onChange={(e) => {
+                    const selectedCategory = availableCategories.find(
+                      (cat) => String(cat.categoryId) === e.target.value
+                    );
+                    setFormData({ ...formData, category: selectedCategory });
+                  }}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${errors.category ? 'border-red-500' : 'border-gray-300'
                     }`}
                 >
                   <option value="">Select a category</option>
                   {availableCategories.map((category) => (
-                    <option key={category.id} value={category.name}>
+                    <option key={category.categoryId} value={category.categoryId}>
                       {category.name}
                     </option>
                   ))}
@@ -218,14 +280,19 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
               <div className="relative">
                 <CreditCard className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <select
-                  value={formData.paymentMethod}
-                  onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                  value={formData.paymentMethod?.paymentMethodId || ''}
+                  onChange={(e) => {
+                    const selectedMethod = paymentMethods.find(
+                      (method) => String(method.paymentMethodId) === e.target.value
+                    );
+                    setFormData({ ...formData, paymentMethod: selectedMethod });
+                  }}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${errors.paymentMethod ? 'border-red-500' : 'border-gray-300'
                     }`}
                 >
                   <option value="">Select payment method</option>
                   {paymentMethods.map((method) => (
-                    <option key={method.id} value={method.name}>
+                    <option key={method.paymentMethodId} value={method.paymentMethodId}>
                       {method.name}
                     </option>
                   ))}
@@ -242,20 +309,20 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
               <div className='flex gap-3 flex-wrap'>
                 {user_Wallet.map((wallet) => (
                   <div
-                    key={wallet.id}
+                    key={wallet.walletId}
                     onClick={() => handleWalletSelect(wallet)}
                     className={`flex flex-col items-center justify-center w-24 
                     border-4 h-20 rounded-2xl cursor-pointer 
-                    duration-300 hover:duration-300 ${current_wallet?.id === wallet.id
+                    duration-300 hover:duration-300 ${current_wallet?.walletId === wallet.walletId
                         ? 'border-green-500 bg-green-100 text-green-700'
                         : 'border-gray-300 hover:bg-gray-100'
                       }`}
-                    style={{ borderColor: current_wallet?.id === wallet.id ? '#10B981' : wallet.color }}
+                    style={{ borderColor: current_wallet?.walletId === wallet.walletId ? '#10B981' : wallet.color }}
                   >
                     <div className="flex flex-col text-center justify-center items-center ">
                       <Wallet />
                       <p className="text-xs font-medium truncate w-20" title={wallet.name}>
-                        
+
                         {wallet.name}
                       </p>
                     </div>
@@ -286,7 +353,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
                   </button>
 
                   <h2 className="text-lg font-semibold mb-4">Create New Wallet</h2>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">

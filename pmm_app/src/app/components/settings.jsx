@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useContext } from 'react';
 import { PmmContext } from '../context/PmmContext';
-
+import { useLocalStorage } from "usehooks-ts";
 import { Plus, Edit2, Trash2, User, LogOut, CreditCard, Tag, Wallet } from 'lucide-react';
 
 export function Settings_PPM({
@@ -32,31 +32,62 @@ export function Settings_PPM({
     const CategoryModal = () => {
         const [formData, setFormData] = useState({
             name: editingCategory?.name || '',
-            type: editingCategory?.type || 'expense',
+            type: editingCategory?.type || 'Expense',
             color: editingCategory?.color || '#3B82F6',
         });
 
-        const handleSubmit = (e) => {
+        const handleSubmit = async (e) => {
             e.preventDefault();
             if (!formData.name.trim()) return;
 
-            if (editingCategory) {
-                onUpdateCategories(categories.map(cat =>
-                    cat.id === editingCategory.id
-                        ? { ...editingCategory, ...formData }
-                        : cat
-                ));
-            } else {
-                onUpdateCategories([
-                    ...categories,
-                    { id: Date.now().toString(), ...formData }
-                ]);
-            }
+            let res;
 
-            setShowCategoryModal(false);
-            setEditingCategory(null);
-            setFormData({ name: '', type: 'expense', color: '#3B82F6' });
+            try {
+                if (editingCategory) {
+                    res = await fetch(`http://localhost:8080/categories/${editingCategory.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                        }),
+                    });
+                } else {
+                    res = await fetch('http://localhost:8080/categories', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                        }),
+                    });
+                }
+                const data = await res.json();
+
+                if (res.ok) {
+                    if (editingCategory) {
+                        onUpdateCategories(categories.map(cat =>
+                            cat.id === editingCategory.id ? data : cat
+                        ));
+                    } else {
+                        onUpdateCategories([...categories, data]);
+                    }
+
+                    setShowCategoryModal(false);
+                    setEditingCategory(null);
+                    setFormData({ name: '', type: 'expense', color: '#3B82F6' });
+                } else {
+                    console.error('API Error:', data);
+                }
+            } catch (err) {
+                console.error('Fetch Error:', err);
+            }
         };
+
 
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -85,8 +116,8 @@ export function Settings_PPM({
                                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                             >
-                                <option value="expense">Expense</option>
-                                <option value="income">Income</option>
+                                <option value="Expense">Expense</option>
+                                <option value="Income">Income</option>
                             </select>
                         </div>
 
@@ -136,26 +167,57 @@ export function Settings_PPM({
             color: editingPayment?.color || '#3B82F6',
         });
 
-        const handleSubmit = (e) => {
+        const handleSubmit = async (e) => {
             e.preventDefault();
             if (!formData.name.trim()) return;
 
-            if (editingPayment) {
-                onUpdatePaymentMethods(paymentMethods.map(method =>
-                    method.id === editingPayment.id
-                        ? { ...editingPayment, ...formData }
-                        : method
-                ));
-            } else {
-                onUpdatePaymentMethods([
-                    ...paymentMethods,
-                    { id: Date.now().toString(), ...formData }
-                ]);
-            }
+            let res;
 
-            setShowPaymentModal(false);
-            setEditingPayment(null);
-            setFormData({ name: '', color: '#3B82F6' });
+            try {
+                if (editingPayment) {
+                    res = await fetch(`http://localhost:8080/payment-methods/${editingPayment.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                        }),
+                    });
+                } else {
+                    res = await fetch('http://localhost:8080/payment-methods', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                        }),
+                    });
+                }
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    if (editingPayment) {
+                        onUpdatePaymentMethods(paymentMethods.map(method =>
+                            method.id === editingPayment.id ? data : method
+                        ));
+                    } else {
+                        onUpdatePaymentMethods([...paymentMethods, data]);
+                    }
+
+                    setShowPaymentModal(false);
+                    setEditingPayment(null);
+                    setFormData({ name: '', color: '#3B82F6' });
+                } else {
+                    console.error('API Error:', data);
+                }
+            } catch (err) {
+                console.error('Fetch Error:', err);
+            }
         };
 
         return (
@@ -238,30 +300,55 @@ export function Settings_PPM({
             color: editingWallet?.color || '#3B82F6',
         });
 
-        const handleSubmit = (e) => {
+        const handleSubmit = async (e) => {
             e.preventDefault();
             if (!formData.name.trim()) return;
+            let res;
 
             if (editingWallet) {
-                setUserWallet(user_Wallet.map(wallet =>
-                    wallet.id === editingWallet.id
-                        ? { ...editingWallet, ...formData, balance: parseFloat(formData.balance) }
-                        : wallet
-                ));
-            } else {
-                setUserWallet([
-                    ...user_Wallet,
-                    {
-                        id: Date.now().toString(),
+                res = await fetch(`http://localhost:8080/wallets/${editingWallet.walletId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User-id': String(user?.id),
+                    },
+                    body: JSON.stringify({
                         ...formData,
-                        balance: parseFloat(formData.balance)
-                    }
-                ]);
-            }
+                        balance: parseFloat(formData.balance),
+                    }),
+                });
 
-            setShowWalletModal(false);
-            setEditingWallet(null);
-            setFormData({ name: '', type: 'bank', balance: 0, color: '#3B82F6' });
+            } else {
+                res = await fetch('http://localhost:8080/wallets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User-id': String(user?.id),
+                    },
+                    body: JSON.stringify({
+                        ...formData,
+                        balance: parseFloat(formData.balance),
+                    }),
+                });
+            }
+            const data = await res.json();
+
+            if (res.ok) {
+                if (editingWallet) {
+                    setUserWallet(user_Wallet.map(wallet =>
+                        wallet.id === editingWallet.id ? data : wallet
+                    ));
+                } else {
+                    setUserWallet([...user_Wallet, data]);
+                }
+
+                // ปิด modal + เคลียร์ฟอร์ม
+                setShowWalletModal(false);
+                setEditingWallet(null);
+                setFormData({ name: '', type: 'bank', balance: 0, color: '#3B82F6' });
+            } else {
+                console.error('API Error:', data);
+            }
         };
 
         return (
@@ -516,7 +603,7 @@ export function Settings_PPM({
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {user_Wallet.map((wallet) => (
                                         <div
-                                            key={wallet.id}
+                                            key={wallet.walletId}
                                             className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                                         >
                                             <div className="flex items-center justify-between">
@@ -544,7 +631,7 @@ export function Settings_PPM({
                                                         <Edit2 className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        onClick={() => deleteWallet(wallet.id)}
+                                                        onClick={() => deleteWallet(wallet.walletId)}
                                                         className="p-2 text-gray-500 hover:text-red-600 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />

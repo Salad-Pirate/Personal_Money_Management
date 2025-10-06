@@ -12,15 +12,15 @@ export function Dashboard({ transactions }) {
 
   const monthlyData = useMemo(() => {
     const currentMonthTransactions = transactions.filter(
-      (t) => t.date.startsWith(currentMonth)
+      (t) => t.occuredAt.startsWith(currentMonth)
     );
 
     const totalIncome = currentMonthTransactions
-      .filter((t) => t.type === 'income')
+      .filter((t) => t.categoryType === 'Income')
       .reduce((sum, t) => sum + t.amount, 0);
 
     const totalExpenses = currentMonthTransactions
-      .filter((t) => t.type === 'expense')
+      .filter((t) => t.categoryType === 'Expense')
       .reduce((sum, t) => sum + t.amount, 0);
 
     const balance = totalIncome - totalExpenses;
@@ -30,7 +30,7 @@ export function Dashboard({ transactions }) {
 
   const recentTransactions = useMemo(() =>
     transactions
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort((a, b) => new Date(b.occuredAt).getTime() - new Date(a.occuredAt).getTime())
       .slice(0, 5),
     [transactions]
   );
@@ -56,7 +56,7 @@ export function Dashboard({ transactions }) {
     const dailyStats = {};
 
     transactions.forEach(transaction => {
-      const date = transaction.date.split('T')[0]; // แยกเอาเฉพาะวันที่
+      const date = transaction.occuredAt.split('T')[0]; // แยกเอาเฉพาะวันที่
 
       if (!dailyStats[date]) {
         dailyStats[date] = {
@@ -67,7 +67,7 @@ export function Dashboard({ transactions }) {
         };
       }
 
-      if (transaction.type === 'income') {
+      if (transaction.categoryType === 'Income') {
         dailyStats[date].income += transaction.amount;
       } else {
         dailyStats[date].expense += transaction.amount;
@@ -277,29 +277,29 @@ export function Dashboard({ transactions }) {
               </div>
             ) : (
               recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div key={transaction.transactionId} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${transaction.type === 'income' ? 'bg-emerald-100' : 'bg-red-100'
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${transaction.categoryType === 'Income' ? 'bg-emerald-100' : 'bg-red-100'
                         }`}>
-                        {transaction.type === 'income' ? (
+                        {transaction.categoryType === 'Income' ? (
                           <TrendingUp className={`w-5 h-5 text-emerald-600`} />
                         ) : (
                           <TrendingDown className={`w-5 h-5 text-red-600`} />
                         )}
                       </div>
                       <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-900">{transaction.category}</p>
-                        <p className="text-sm text-gray-500">{formatDate(transaction.date)}</p>
+                        <p className="text-sm font-medium text-gray-900">{transaction.categoryName}</p>
+                        <p className="text-sm text-gray-500">{formatDate(transaction.occuredAt)}</p>
                         {transaction.note && (
                           <p className="text-sm text-gray-400 truncate max-w-xs">{transaction.note}</p>
                         )}
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`text-lg font-semibold ${transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'
+                      <p className={`text-lg font-semibold ${transaction.categoryType === 'Income' ? 'text-emerald-600' : 'text-red-600'
                         }`}>
-                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                        {transaction.categoryType === 'Income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                       </p>
                       <p className="text-sm text-gray-500">{transaction.paymentMethod}</p>
                     </div>

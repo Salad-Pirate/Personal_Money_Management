@@ -1,11 +1,13 @@
 import React, { useState, useContext } from 'react';
 import { DollarSign, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { PmmContext } from '../../context/PmmContext';
+import { useLocalStorage } from "usehooks-ts";
 
 const AuthPage = ({ onLogin }) => {
-    const { setUser_id } = useContext(PmmContext)
+
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
+    const [useID, setUserID] = useLocalStorage("UserID", null);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -56,10 +58,11 @@ const AuthPage = ({ onLogin }) => {
 
                 if (res.ok) {
                     onLogin({
-                        id: data.id,
-                        name: formData.name
+                        id: data.userId,
+                        name: formData.displayname
                     })
-                    setUser_id(data.id)
+                    
+                    setUserID(data.userId)
                 } else {
                     console.log(data);
                 }
@@ -87,11 +90,10 @@ const AuthPage = ({ onLogin }) => {
 
                 if (res.ok) {
                     onLogin({
-                        id: data.id,
-                        name: formData.name
+                        id: data.userId,
+                        name: formData.displayname
                     })
-                    setUser_id(data.id)
-
+                    setUserID(data.userId)
                 } else {
                     console.log(data);
                 }
