@@ -64,7 +64,7 @@ jobs:
         env:
           CYPRESS_baseUrl: http://localhost:3000
         run: |
-          cd pmm_app
+          cd cypress
           npx cypress run --browser chrome --headless
 
       - name: Upload Cypress results
@@ -73,6 +73,6 @@ jobs:
         with:
           name: cypress-results
           path: |
-            pmm_app/cypress/videos
-            pmm_app/cypress/screenshots
+            cypress/videos
+            cypress/screenshots
           if-no-files-found: ignore
