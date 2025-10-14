@@ -1,0 +1,85 @@
+name: E2E Test (FE with Cypress)
+
+on:
+  push:
+    branches: [ "CI-dev" ]
+  pull_request:
+    branches: [ "CI-dev" ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: chitose/pmm_db_seeded:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: pmm
+          POSTGRES_USER: pmm_user
+          POSTGRES_PASSWORD: pmm_pass
+        options: >-
+          --health-cmd="pg_isready -U pmm_user -d pmm"
+          --health-interval=5s --health-timeout=3s --health-retries=20
+
+      be:
+        image: chitose/pmm_be:latest
+        ports:
+          - 8080:8080
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/pmm
+          SPRING_DATASOURCE_USERNAME: pmm_user
+          SPRING_DATASOURCE_PASSWORD: pmm_pass
+          SERVER_PORT: 8080
+        options: >-
+          --health-cmd="curl -f http://localhost:8080/actuator/health || exit 1"
+          --health-interval=5s --health-timeout=3s --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: pmm_app/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd pmm_app
+          npm ci
+
+      - name: Build Next.js
+        run: |
+          cd pmm_app
+          npm run build
+
+      - name: Start Next.js
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8080
+        run: |
+          cd pmm_app
+          nohup npm run start -- -p 3000 > fe.log 2>&1 &
+          npx wait-on http://localhost:3000
+
+      - name: Install Cypress
+        run: npm install -g cypress wait-on
+
+      - name: Run Cypress E2E Tests
+        env:
+          CYPRESS_baseUrl: http://localhost:3000
+        run: |
+          cd pmm_app
+          npx cypress run --browser chrome --headless
+
+      - name: Upload Cypress results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-results
+          path: |
+            pmm_app/cypress/videos
+            pmm_app/cypress/screenshots
+          if-no-files-found: ignore
