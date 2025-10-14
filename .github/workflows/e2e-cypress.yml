@@ -64,8 +64,7 @@ jobs:
         env:
           CYPRESS_baseUrl: http://localhost:3000
         run: |
-          cd cypress
-          npx cypress run --browser chrome --headless
+          npx cypress run --headless --config-file cypress.config.js
 
       - name: Upload Cypress results
         if: always()
@@ -74,5 +73,5 @@ jobs:
           name: cypress-results
           path: |
             cypress/videos
-            cypress/screenshots
+            Scypress/screenshots
           if-no-files-found: ignore
