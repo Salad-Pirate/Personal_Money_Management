@@ -52,7 +52,7 @@ jobs:
       - name: Build Next.js
         run: |
           cd pmm_app
-          npm run build
+          npm run dev
 
       - name: Start Next.js
         env:
