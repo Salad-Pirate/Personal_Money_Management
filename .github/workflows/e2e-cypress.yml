@@ -49,17 +49,12 @@ jobs:
           cd pmm_app
           npm ci
 
-      - name: Build Next.js
-        run: |
-          cd pmm_app
-          npm run dev
-
       - name: Start Next.js
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8080
         run: |
           cd pmm_app
-          nohup npm run start -- -p 3000 > fe.log 2>&1 &
+          nohup npm run dev -- -p 3000 > fe.log 2>&1 &
           npx wait-on http://localhost:3000
 
       - name: Install Cypress
