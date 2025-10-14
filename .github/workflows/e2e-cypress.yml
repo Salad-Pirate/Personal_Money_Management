@@ -12,7 +12,7 @@ jobs:
 
     services:
       db:
-        image: chitose/pmm_db_seeded:latest
+        image: chitipatpangma/pmm_db_seeded:latest
         ports:
           - 5432:5432
         env:
@@ -24,7 +24,7 @@ jobs:
           --health-interval=5s --health-timeout=3s --health-retries=20
 
       be:
-        image: chitose/pmm_be:latest
+        image: chitipatpangma/pmm_be:latest
         ports:
           - 8080:8080
         env:
