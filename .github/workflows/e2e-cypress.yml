@@ -64,7 +64,13 @@ jobs:
         env:
           CYPRESS_baseUrl: http://localhost:3000
         run: |
-          npx cypress run --headless --config-file cypress.config.js
+          mkdir -p cypress/results
+          npx cypress run --headless \
+          --spec "cypress/e2e/pmm_app_e2e/**/*.cy.js" \
+          --reporter junit \
+          --reporter-options "mochaFile=cypress/results/junit-[hash].xml,toConsole=true" \
+          --config "video=true,trashAssetsBeforeRuns=false,watchForFileChanges=false"
+          
 
       - name: Upload Cypress results
         if: always()
@@ -72,6 +78,8 @@ jobs:
         with:
           name: cypress-results
           path: |
+            cypress/results
             cypress/videos
-            Scypress/screenshots
+            cypress/screenshots
+            pmm_app/fe_cypress_call.log
           if-no-files-found: ignore
