@@ -1,4 +1,4 @@
-name: E2E Test (FE with Cypress)
+name: E2E Test (FE with Cypress and Next JS)
 
 on:
   push:
