@@ -32,9 +32,7 @@ jobs:
           SPRING_DATASOURCE_USERNAME: pmm_user
           SPRING_DATASOURCE_PASSWORD: pmm_pass
           SERVER_PORT: 8080
-        options: >-
-          --health-cmd="curl -f http://localhost:8080/actuator/health || exit 1"
-          --health-interval=5s --health-timeout=3s --health-retries=20
+
 
     steps:
       - uses: actions/checkout@v4
