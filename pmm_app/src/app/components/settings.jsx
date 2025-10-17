@@ -44,15 +44,13 @@ export function Settings_PPM({
 
             try {
                 if (editingCategory) {
-                    res = await fetch(`http://localhost:8080/categories/${editingCategory.id}`, {
+                    res = await fetch(`http://localhost:8080/categories/${parseInt(editingCategory.categoryId)}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-User-id': String(user?.id),
                         },
-                        body: JSON.stringify({
-                            ...formData,
-                        }),
+                        body: JSON.stringify(formData),
                     });
                 } else {
                     res = await fetch('http://localhost:8080/categories', {
@@ -61,19 +59,22 @@ export function Settings_PPM({
                             'Content-Type': 'application/json',
                             'X-User-id': String(user?.id),
                         },
-                        body: JSON.stringify({
-                            ...formData,
-                        }),
+                        body: JSON.stringify(formData),
                     });
                 }
-                const data = await res.json();
+
+                let data = null;
+                const text = await res.text();
+                if (text) {
+                    data = JSON.parse(text);
+                }
 
                 if (res.ok) {
-                    if (editingCategory) {
+                    if (editingCategory && data) {
                         onUpdateCategories(categories.map(cat =>
-                            cat.id === editingCategory.id ? data : cat
+                            cat.categoryId === editingCategory.categoryId ? data : cat
                         ));
-                    } else {
+                    } else if (data) {
                         onUpdateCategories([...categories, data]);
                     }
 
@@ -81,7 +82,7 @@ export function Settings_PPM({
                     setEditingCategory(null);
                     setFormData({ name: '', type: 'expense', color: '#3B82F6' });
                 } else {
-                    console.error('API Error:', data);
+                    console.error('API Error:', data || res.statusText);
                 }
             } catch (err) {
                 console.error('Fetch Error:', err);
@@ -167,6 +168,7 @@ export function Settings_PPM({
             color: editingPayment?.color || '#3B82F6',
         });
 
+
         const handleSubmit = async (e) => {
             e.preventDefault();
             if (!formData.name.trim()) return;
@@ -175,15 +177,13 @@ export function Settings_PPM({
 
             try {
                 if (editingPayment) {
-                    res = await fetch(`http://localhost:8080/payment-methods/${editingPayment.id}`, {
+                    res = await fetch(`http://localhost:8080/payment-methods/${parseInt(editingPayment.paymentMethodId)}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-User-id': String(user?.id),
                         },
-                        body: JSON.stringify({
-                            ...formData,
-                        }),
+                        body: JSON.stringify(formData),
                     });
                 } else {
                     res = await fetch('http://localhost:8080/payment-methods', {
@@ -192,28 +192,32 @@ export function Settings_PPM({
                             'Content-Type': 'application/json',
                             'X-User-id': String(user?.id),
                         },
-                        body: JSON.stringify({
-                            ...formData,
-                        }),
+                        body: JSON.stringify(formData),
                     });
                 }
 
-                const data = await res.json();
+
+                let data = null;
+                const text = await res.text();
+                if (text) {
+                    data = JSON.parse(text);
+                }
 
                 if (res.ok) {
-                    if (editingPayment) {
+                    if (editingPayment && data) {
                         onUpdatePaymentMethods(paymentMethods.map(method =>
-                            method.id === editingPayment.id ? data : method
+                            method.paymentMethodId === editingPayment.paymentMethodId ? data : method
                         ));
-                    } else {
+                    } else if (data) {
                         onUpdatePaymentMethods([...paymentMethods, data]);
                     }
+
 
                     setShowPaymentModal(false);
                     setEditingPayment(null);
                     setFormData({ name: '', color: '#3B82F6' });
                 } else {
-                    console.error('API Error:', data);
+                    console.error('API Error:', data || res.statusText);
                 }
             } catch (err) {
                 console.error('Fetch Error:', err);
@@ -280,15 +284,57 @@ export function Settings_PPM({
         );
     };
 
-    const deleteCategory = (categoryId) => {
-        if (window.confirm('Are you sure you want to delete this category?')) {
-            onUpdateCategories(categories.filter(cat => cat.id !== categoryId));
+    const deleteCategory = async (categoryId) => {
+        if (!window.confirm('Are you sure you want to delete this category?')) return;
+
+        try {
+            const res = await fetch(`http://localhost:8080/categories/${categoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-id': String(user?.id),
+                },
+            });
+
+            if (res.ok) {
+                onUpdateCategories(categories.filter(cat => cat.categoryId !== categoryId));
+                console.log('Category deleted successfully');
+            } else {
+                const text = await res.text();
+                const data = text ? JSON.parse(text) : null;
+                console.error('API Error:', data || res.statusText);
+            }
+        } catch (err) {
+            console.error('Fetch Error:', err);
         }
     };
 
-    const deletePaymentMethod = (paymentId) => {
-        if (window.confirm('Are you sure you want to delete this payment method?')) {
-            onUpdatePaymentMethods(paymentMethods.filter(method => method.id !== paymentId));
+    const deletePaymentMethod = async (paymentId) => {
+        if (!window.confirm('Are you sure you want to delete this payment method?')) return;
+
+        if (!paymentId) {
+            console.error("paymentId is undefined or null");
+            return;
+        }
+
+        try {
+            const res = await fetch(`http://localhost:8080/payment-methods/${parseInt(paymentId, 10)}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-id': String(user?.id),
+                },
+            });
+
+            if (res.ok) {
+                // ลบ payment method ออกจาก state
+                onUpdatePaymentMethods(paymentMethods.filter(method => method.paymentMethodId !== paymentId));
+                console.log('Payment method deleted successfully');
+            } else {
+                const text = await res.text();
+                const data = text ? JSON.parse(text) : null;
+                console.error('API Error:', data || res.statusText);
+            }
+        } catch (err) {
+            console.error('Fetch Error:', err);
         }
     };
 
@@ -303,51 +349,68 @@ export function Settings_PPM({
         const handleSubmit = async (e) => {
             e.preventDefault();
             if (!formData.name.trim()) return;
+
             let res;
 
-            if (editingWallet) {
-                res = await fetch(`http://localhost:8080/wallets/${editingWallet.walletId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-User-id': String(user?.id),
-                    },
-                    body: JSON.stringify({
-                        ...formData,
-                        balance: parseFloat(formData.balance),
-                    }),
-                });
-
-            } else {
-                res = await fetch('http://localhost:8080/wallets', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-User-id': String(user?.id),
-                    },
-                    body: JSON.stringify({
-                        ...formData,
-                        balance: parseFloat(formData.balance),
-                    }),
-                });
-            }
-            const data = await res.json();
-
-            if (res.ok) {
+            try {
                 if (editingWallet) {
-                    setUserWallet(user_Wallet.map(wallet =>
-                        wallet.id === editingWallet.id ? data : wallet
-                    ));
+                    res = await fetch(`http://localhost:8080/wallets/${parseInt(editingWallet.walletId)}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                            balance: parseFloat(formData.balance),
+                        }),
+                    });
                 } else {
-                    setUserWallet([...user_Wallet, data]);
+                    res = await fetch('http://localhost:8080/wallets', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                            balance: parseFloat(formData.balance),
+                        }),
+                    });
                 }
 
-                // ปิด modal + เคลียร์ฟอร์ม
-                setShowWalletModal(false);
-                setEditingWallet(null);
-                setFormData({ name: '', type: 'bank', balance: 0, color: '#3B82F6' });
-            } else {
-                console.error('API Error:', data);
+
+                let data = null;
+                const text = await res.text();
+                if (text) {
+                    data = JSON.parse(text);
+                }
+
+                if (res.ok) {
+                    if (editingWallet && data) {
+                        setUserWallet(user_Wallet.map(wallet =>
+                            wallet.walletId === editingWallet.walletId ? data : wallet
+                        ));
+                    } else if (data) {
+                        setUserWallet([...user_Wallet, data]);
+                    }
+
+                    user_Wallet.map()
+                    setShowWalletModal(false);
+                    setEditingWallet(null);
+                    setFormData({ name: '', type: 'bank', balance: 0, color: '#3B82F6' });
+
+                    // setUserWallet(user_Wallet.map(wallet =>
+                    //     wallet.walletId === editingWallet.walletId
+                    //         ? editingWallet // หรือ data ใหม่จาก API
+                    //         : wallet
+                    // ));
+                    // window.location.reload();
+                } else {
+                    console.error('API Error:', data || res.statusText);
+                }
+            } catch (err) {
+                console.error('Fetch Error:', err);
             }
         };
 
@@ -439,9 +502,28 @@ export function Settings_PPM({
         );
     };
     // Add this delete function
-    const deleteWallet = (walletId) => {
-        if (window.confirm('Are you sure you want to delete this wallet?')) {
-            setUserWallet(user_Wallet.filter(wallet => wallet.id !== walletId));
+    const deleteWallet = async (walletId) => {
+        if (!window.confirm('Are you sure you want to delete this wallet?')) return;
+
+        try {
+            const res = await fetch(`http://localhost:8080/wallets/${parseInt(walletId)}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-id': String(user?.id),
+                },
+            });
+
+            if (res.ok) {
+                // ลบ wallet ออกจาก state
+                setUserWallet(user_Wallet.filter(wallet => wallet.walletId !== walletId));
+                console.log('Wallet deleted successfully');
+            } else {
+                const text = await res.text();
+                const data = text ? JSON.parse(text) : null;
+                console.error('API Error:', data || res.statusText);
+            }
+        } catch (err) {
+            console.error('Fetch Error:', err);
         }
     };
     return (
@@ -520,7 +602,7 @@ export function Settings_PPM({
                                                         <Edit2 className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        onClick={() => deleteCategory(category.id)}
+                                                        onClick={() => deleteCategory(category.categoryId)}
                                                         className="p-2 text-gray-500 hover:text-red-600 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -573,7 +655,7 @@ export function Settings_PPM({
                                                         <Edit2 className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        onClick={() => deletePaymentMethod(method.id)}
+                                                        onClick={() => deletePaymentMethod(method.paymentMethodId)}
                                                         className="p-2 text-gray-500 hover:text-red-600 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
