@@ -101,8 +101,8 @@ jobs:
         id: vars
         run: |
           SHA=${GITHUB_SHA::7}
-          echo "latest=${{ secrets.DOCKERHUB_USERNAME }}/pmm_be:latest" >> $GITHUB_OUTPUT
-          echo "sha=${{ secrets.DOCKERHUB_USERNAME }}/pmm_be:${SHA}" >> $GITHUB_OUTPUT
+          echo "latest=${{ secrets.DOCKERHUB_USERNAME }}/pmm_fe:latest" >> $GITHUB_OUTPUT
+          echo "sha=${{ secrets.DOCKERHUB_USERNAME }}/pmm_fe:${SHA}" >> $GITHUB_OUTPUT
 
       - name: Build & Push Docker
         uses: docker/build-push-action@v6
