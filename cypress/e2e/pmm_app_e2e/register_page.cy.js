@@ -16,8 +16,8 @@ describe('register page', () => {
 
   it('register successfully with valid credentials', () => {
     cy.get('.text-gray-600 > .text-emerald-600').click()
-    cy.get(':nth-child(1) > .relative > .w-full').type('test008')
-    cy.get(':nth-child(2) > .relative > .w-full').type('abcd@gmail.com')
+    cy.get(':nth-child(1) > .relative > .w-full').type('test012')
+    cy.get(':nth-child(2) > .relative > .w-full').type('6687012@gmail.com')
     cy.get(':nth-child(3) > .relative > .w-full').type('123456789')
     cy.get('.bg-emerald-600').click()
 
