@@ -1,0 +1,114 @@
+name: E2E Test (FE with Cypress and Next JS)
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: chitipatpangma/pmm_db_seeded:9c17f31
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: pmm
+          POSTGRES_USER: pmm_user
+          POSTGRES_PASSWORD: pmm_pass
+        options: >-
+          --health-cmd="pg_isready -U pmm_user -d pmm"
+          --health-interval=5s --health-timeout=3s --health-retries=20
+
+      be:
+        image: chitipatpangma/pmm_be:396af4c
+        ports:
+          - 8080:8080
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/pmm
+          SPRING_DATASOURCE_USERNAME: pmm_user
+          SPRING_DATASOURCE_PASSWORD: pmm_pass
+          SERVER_PORT: 8080
+
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: pmm_app/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd pmm_app
+          npm ci
+
+      - name: Start Next.js
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8080
+        run: |
+          cd pmm_app
+          nohup npm run dev -- -p 3000 > fe.log 2>&1 &
+          npx wait-on http://localhost:3000
+
+      - name: Install Cypress
+        run: npm install -g cypress wait-on
+
+      - name: Run Cypress E2E Tests
+        env:
+          CYPRESS_baseUrl: http://localhost:3000
+        run: |
+          mkdir -p cypress/results
+          npx cypress run --headless \
+          --spec "cypress/e2e/pmm_app_e2e/**/*.cy.js" \
+          --reporter junit \
+          --reporter-options "mochaFile=cypress/results/junit-[hash].xml,toConsole=true" \
+          --config "video=true,trashAssetsBeforeRuns=false,watchForFileChanges=false"
+          
+
+      - name: Upload Cypress results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-results
+          path: |
+            cypress/results
+            cypress/videos
+            cypress/screenshots
+            pmm_app/fe_cypress_call.log
+          if-no-files-found: ignore
+
+         
+  docker:
+    runs-on: ubuntu-latest
+    # needs: e2e
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Compute tags
+        id: vars
+        run: |
+          SHA=${GITHUB_SHA::7}
+          echo "latest=${{ secrets.DOCKERHUB_USERNAME }}/pmm_fe:latest" >> $GITHUB_OUTPUT
+          echo "sha=${{ secrets.DOCKERHUB_USERNAME }}/pmm_fe:${SHA}" >> $GITHUB_OUTPUT
+
+      - name: Build & Push Docker
+        uses: docker/build-push-action@v6
+        with:
+          context: ./pmm_app
+          push: true
+          tags: |
+            ${{ steps.vars.outputs.latest }}
+            ${{ steps.vars.outputs.sha }}
