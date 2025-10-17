@@ -5,7 +5,7 @@ describe('addtransaction page', () => {
 
   it('adds a new income record successfully', () => {
     // login
-    cy.get(':nth-child(1) > .relative > .w-full').type('abc@gmail.com')
+    cy.get(':nth-child(1) > .relative > .w-full').type('abcd@gmail.com')
     cy.get(':nth-child(2) > .relative > .w-full').type('123456789')
     cy.get('.bg-emerald-600').click()
     // add income
@@ -23,7 +23,7 @@ describe('addtransaction page', () => {
 
   it('adds a new expense record successfully', () => {
     // login
-    cy.get(':nth-child(1) > .relative > .w-full').type('abc@gmail.com')
+    cy.get(':nth-child(1) > .relative > .w-full').type('abcd@gmail.com')
     cy.get(':nth-child(2) > .relative > .w-full').type('123456789')
     cy.get('.bg-emerald-600').click()
     // add expense
