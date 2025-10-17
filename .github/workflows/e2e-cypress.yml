@@ -107,7 +107,7 @@ jobs:
       - name: Build & Push Docker
         uses: docker/build-push-action@v6
         with:
-          context: ./pmm_fe
+          context: ./pmm_app
           push: true
           tags: |
             ${{ steps.vars.outputs.latest }}
