@@ -48,7 +48,7 @@ export function Settings_PPM({
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-User-id': String(user?.id),
+                            'X-User-id': parseInt(user?.id),
                         },
                         body: JSON.stringify(formData),
                     });
@@ -57,7 +57,7 @@ export function Settings_PPM({
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-User-id': String(user?.id),
+                            'X-User-id': parseInt(user?.id),
                         },
                         body: JSON.stringify(formData),
                     });
@@ -181,7 +181,7 @@ export function Settings_PPM({
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-User-id': String(user?.id),
+                            'X-User-id': parseInt(user?.id),
                         },
                         body: JSON.stringify(formData),
                     });
@@ -190,7 +190,7 @@ export function Settings_PPM({
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-User-id': String(user?.id),
+                            'X-User-id': parseInt(user?.id),
                         },
                         body: JSON.stringify(formData),
                     });
@@ -291,7 +291,7 @@ export function Settings_PPM({
             const res = await fetch(`http://localhost:8080/categories/${categoryId}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-User-id': String(user?.id),
+                    'X-User-id': parseInt(user?.id),
                 },
             });
 
@@ -320,7 +320,7 @@ export function Settings_PPM({
             const res = await fetch(`http://localhost:8080/payment-methods/${parseInt(paymentId, 10)}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-User-id': String(user?.id),
+                    'X-User-id': parseInt(user?.id),
                 },
             });
 
@@ -358,7 +358,7 @@ export function Settings_PPM({
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-User-id': String(user?.id),
+                            'X-User-id': parseInt(user?.id),
                         },
                         body: JSON.stringify({
                             ...formData,
@@ -370,7 +370,7 @@ export function Settings_PPM({
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-User-id': String(user?.id),
+                            'X-User-id': parseInt(user?.id),
                         },
                         body: JSON.stringify({
                             ...formData,
@@ -509,7 +509,7 @@ export function Settings_PPM({
             const res = await fetch(`http://localhost:8080/wallets/${parseInt(walletId)}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-User-id': String(user?.id),
+                    'X-User-id': parseInt(user?.id),
                 },
             });
 
@@ -746,8 +746,7 @@ export function Settings_PPM({
                                             <User className="w-6 h-6 text-emerald-600" />
                                         </div>
                                         <div className="ml-4">
-                                            <p className="font-medium text-gray-900">{user.name}</p>
-                                            <p className="text-sm text-gray-500">{user.email}</p>
+                                            
                                         </div>
                                     </div>
 
