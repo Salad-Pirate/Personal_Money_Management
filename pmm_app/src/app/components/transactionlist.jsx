@@ -9,9 +9,9 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
   const filteredTransactions = useMemo(() => {
     return transactions
       .filter((transaction) => {
-        const matchesSearch = transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchesSearch = transaction.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           transaction.note?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          transaction.location?.toLowerCase().includes(searchTerm.toLowerCase());
+          transaction.transactionLocation?.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchesType = filterType === 'all' || transaction.type === filterType;
         const matchesCategory = !filterCategory || transaction.category === filterCategory;
@@ -39,7 +39,7 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
   };
 
   const getCategoryColor = (categoryName) => {
-    const category = categories.find(cat => cat.name === categoryName);
+    const category = categories.find(cat => cat.categoryName === categoryName);
     return category?.color || '#6B7280';
   };
 
@@ -75,8 +75,8 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
+              <option value="Income">Income</option>
+              <option value="Expense">Expense</option>
             </select>
           </div>
 
@@ -89,7 +89,7 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
             >
               <option value="">All Categories</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.name}>
+                <option key={category.categoryId} value={category.name}>
                   {category.name}
                 </option>
               ))}
@@ -115,42 +115,42 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
         ) : (
           <div className="divide-y divide-gray-200">
             {filteredTransactions.map((transaction) => (
-              <div key={transaction.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div key={transaction.transactionId} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div 
                       className="w-12 h-12 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: getCategoryColor(transaction.category) + '20' }}
+                      style={{ backgroundColor: getCategoryColor(transaction.categoryName) + '20' }}
                     >
-                      {transaction.type === 'income' ? (
-                        <TrendingUp className="w-6 h-6" style={{ color: getCategoryColor(transaction.category) }} />
+                      {transaction.categoryType === 'Income' ? (
+                        <TrendingUp className="w-6 h-6" style={{ color: getCategoryColor(transaction.categoryName) }} />
                       ) : (
-                        <TrendingDown className="w-6 h-6" style={{ color: getCategoryColor(transaction.category) }} />
+                        <TrendingDown className="w-6 h-6" style={{ color: getCategoryColor(transaction.categoryName) }} />
                       )}
                     </div>
                     <div className="ml-4">
                       <div className="flex items-center">
-                        <h3 className="text-lg font-medium text-gray-900">{transaction.category}</h3>
+                        <h3 className="text-lg font-medium text-gray-900">{transaction.categoryName}</h3>
                         <span 
                           className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                           style={{ 
-                            backgroundColor: getCategoryColor(transaction.category) + '20',
-                            color: getCategoryColor(transaction.category)
+                            backgroundColor: getCategoryColor(transaction.categoryName) + '20',
+                            color: getCategoryColor(transaction.categoryName)
                           }}
                         >
-                          {transaction.type}
+                          {transaction.categoryType}
                         </span>
                       </div>
                       <div className="flex items-center text-sm text-gray-500 mt-1">
                         <Calendar className="w-4 h-4 mr-1" />
-                        {formatDate(transaction.date)}
+                        {formatDate(transaction.occuredAt)}
                         <span className="mx-2">•</span>
-                        {transaction.paymentMethod}
-                        {transaction.location && (
+                        {transaction.paymentMethodName}
+                        {transaction.transactionLocation && (
                           <>
                             <span className="mx-2">•</span>
                             <MapPin className="w-4 h-4 mr-1" />
-                            {transaction.location}
+                            {transaction.transactionLocation}
                           </>
                         )}
                       </div>
@@ -161,9 +161,9 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
                   </div>
                   <div className="text-right">
                     <p className={`text-xl font-bold ${
-                      transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'
+                      transaction.categoryType === 'Income' ? 'text-emerald-600' : 'text-red-600'
                     }`}>
-                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                      {transaction.categoryType === 'Income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                     </p>
                   </div>
                 </div>

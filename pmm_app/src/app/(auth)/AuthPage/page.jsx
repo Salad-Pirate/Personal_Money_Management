@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { DollarSign, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { PmmContext } from '../../context/PmmContext';
+import { useLocalStorage } from "usehooks-ts";
 
 const AuthPage = ({ onLogin }) => {
+
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
+    const [useID, setUserID] = useLocalStorage("UserID", null);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -34,14 +38,68 @@ const AuthPage = ({ onLogin }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (validateForm()) {
-            onLogin({
-                id: '1',
-                name: formData.name || 'User',
-                email: formData.email,
-            });
+        // Login
+        if (validateForm() && isLogin) {
+            try {
+                const res = await fetch('http://localhost:8080/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "email": formData.email,
+                        "password": formData.password
+                    }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    onLogin({
+                        id: data.userId,
+                        name: formData.displayname
+                    })
+                    
+                    setUserID(data.userId)
+                } else {
+                    console.log(data);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        // Register
+        if (validateForm() && !isLogin) {
+            try {
+                const res = await fetch('http://localhost:8080/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "email": formData.email,
+                        "password": formData.password,
+                        "displayName": formData.name
+                    }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    onLogin({
+                        id: data.userId,
+                        name: formData.displayname
+                    })
+                    setUserID(data.userId)
+                } else {
+                    console.log(data);
+                }
+            } catch (error) {
+                console.log(error);
+            }
         }
     };
 

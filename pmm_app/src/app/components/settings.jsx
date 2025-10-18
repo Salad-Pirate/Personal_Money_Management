@@ -1,6 +1,8 @@
-
-import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, User, LogOut, CreditCard, Tag } from 'lucide-react';
+'use client'
+import React, { useState, useContext } from 'react';
+import { PmmContext } from '../context/PmmContext';
+import { useLocalStorage } from "usehooks-ts";
+import { Plus, Edit2, Trash2, User, LogOut, CreditCard, Tag, Wallet } from 'lucide-react';
 
 export function Settings_PPM({
     categories,
@@ -10,46 +12,83 @@ export function Settings_PPM({
     user,
     onLogout
 }) {
+    const { user_Wallet, setUserWallet } = useContext(PmmContext)
     const [activeSection, setActiveSection] = useState('categories');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
     const [editingPayment, setEditingPayment] = useState(null);
+    const [showWalletModal, setShowWalletModal] = useState(false);
+    const [editingWallet, setEditingWallet] = useState(null);
 
     const sections = [
         { id: 'categories', label: 'Categories', icon: Tag },
         { id: 'payment-methods', label: 'Payment Methods', icon: CreditCard },
+        { id: 'wallet', label: 'Wallet', icon: Wallet },
         { id: 'profile', label: 'Profile', icon: User },
+
     ];
 
     const CategoryModal = () => {
         const [formData, setFormData] = useState({
             name: editingCategory?.name || '',
-            type: editingCategory?.type || 'expense',
+            type: editingCategory?.type || 'Expense',
             color: editingCategory?.color || '#3B82F6',
         });
 
-        const handleSubmit = (e) => {
+        const handleSubmit = async (e) => {
             e.preventDefault();
             if (!formData.name.trim()) return;
 
-            if (editingCategory) {
-                onUpdateCategories(categories.map(cat =>
-                    cat.id === editingCategory.id
-                        ? { ...editingCategory, ...formData }
-                        : cat
-                ));
-            } else {
-                onUpdateCategories([
-                    ...categories,
-                    { id: Date.now().toString(), ...formData }
-                ]);
-            }
+            let res;
 
-            setShowCategoryModal(false);
-            setEditingCategory(null);
-            setFormData({ name: '', type: 'expense', color: '#3B82F6' });
+            try {
+                if (editingCategory) {
+                    res = await fetch(`http://localhost:8080/categories/${parseInt(editingCategory.categoryId)}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify(formData),
+                    });
+                } else {
+                    res = await fetch('http://localhost:8080/categories', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify(formData),
+                    });
+                }
+
+                let data = null;
+                const text = await res.text();
+                if (text) {
+                    data = JSON.parse(text);
+                }
+
+                if (res.ok) {
+                    if (editingCategory && data) {
+                        onUpdateCategories(categories.map(cat =>
+                            cat.categoryId === editingCategory.categoryId ? data : cat
+                        ));
+                    } else if (data) {
+                        onUpdateCategories([...categories, data]);
+                    }
+
+                    setShowCategoryModal(false);
+                    setEditingCategory(null);
+                    setFormData({ name: '', type: 'expense', color: '#3B82F6' });
+                } else {
+                    console.error('API Error:', data || res.statusText);
+                }
+            } catch (err) {
+                console.error('Fetch Error:', err);
+            }
         };
+
 
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -78,8 +117,8 @@ export function Settings_PPM({
                                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                             >
-                                <option value="expense">Expense</option>
-                                <option value="income">Income</option>
+                                <option value="Expense">Expense</option>
+                                <option value="Income">Income</option>
                             </select>
                         </div>
 
@@ -129,26 +168,60 @@ export function Settings_PPM({
             color: editingPayment?.color || '#3B82F6',
         });
 
-        const handleSubmit = (e) => {
+
+        const handleSubmit = async (e) => {
             e.preventDefault();
             if (!formData.name.trim()) return;
 
-            if (editingPayment) {
-                onUpdatePaymentMethods(paymentMethods.map(method =>
-                    method.id === editingPayment.id
-                        ? { ...editingPayment, ...formData }
-                        : method
-                ));
-            } else {
-                onUpdatePaymentMethods([
-                    ...paymentMethods,
-                    { id: Date.now().toString(), ...formData }
-                ]);
-            }
+            let res;
 
-            setShowPaymentModal(false);
-            setEditingPayment(null);
-            setFormData({ name: '', color: '#3B82F6' });
+            try {
+                if (editingPayment) {
+                    res = await fetch(`http://localhost:8080/payment-methods/${parseInt(editingPayment.paymentMethodId)}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify(formData),
+                    });
+                } else {
+                    res = await fetch('http://localhost:8080/payment-methods', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify(formData),
+                    });
+                }
+
+
+                let data = null;
+                const text = await res.text();
+                if (text) {
+                    data = JSON.parse(text);
+                }
+
+                if (res.ok) {
+                    if (editingPayment && data) {
+                        onUpdatePaymentMethods(paymentMethods.map(method =>
+                            method.paymentMethodId === editingPayment.paymentMethodId ? data : method
+                        ));
+                    } else if (data) {
+                        onUpdatePaymentMethods([...paymentMethods, data]);
+                    }
+
+
+                    setShowPaymentModal(false);
+                    setEditingPayment(null);
+                    setFormData({ name: '', color: '#3B82F6' });
+                } else {
+                    console.error('API Error:', data || res.statusText);
+                }
+            } catch (err) {
+                console.error('Fetch Error:', err);
+            }
         };
 
         return (
@@ -211,18 +284,248 @@ export function Settings_PPM({
         );
     };
 
-    const deleteCategory = (categoryId) => {
-        if (window.confirm('Are you sure you want to delete this category?')) {
-            onUpdateCategories(categories.filter(cat => cat.id !== categoryId));
+    const deleteCategory = async (categoryId) => {
+        if (!window.confirm('Are you sure you want to delete this category?')) return;
+
+        try {
+            const res = await fetch(`http://localhost:8080/categories/${categoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-id': String(user?.id),
+                },
+            });
+
+            if (res.ok) {
+                onUpdateCategories(categories.filter(cat => cat.categoryId !== categoryId));
+                console.log('Category deleted successfully');
+            } else {
+                const text = await res.text();
+                const data = text ? JSON.parse(text) : null;
+                console.error('API Error:', data || res.statusText);
+            }
+        } catch (err) {
+            console.error('Fetch Error:', err);
         }
     };
 
-    const deletePaymentMethod = (paymentId) => {
-        if (window.confirm('Are you sure you want to delete this payment method?')) {
-            onUpdatePaymentMethods(paymentMethods.filter(method => method.id !== paymentId));
+    const deletePaymentMethod = async (paymentId) => {
+        if (!window.confirm('Are you sure you want to delete this payment method?')) return;
+
+        if (!paymentId) {
+            console.error("paymentId is undefined or null");
+            return;
+        }
+
+        try {
+            const res = await fetch(`http://localhost:8080/payment-methods/${parseInt(paymentId, 10)}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-id': String(user?.id),
+                },
+            });
+
+            if (res.ok) {
+                // ลบ payment method ออกจาก state
+                onUpdatePaymentMethods(paymentMethods.filter(method => method.paymentMethodId !== paymentId));
+                console.log('Payment method deleted successfully');
+            } else {
+                const text = await res.text();
+                const data = text ? JSON.parse(text) : null;
+                console.error('API Error:', data || res.statusText);
+            }
+        } catch (err) {
+            console.error('Fetch Error:', err);
         }
     };
 
+    const WalletModal = () => {
+        const [formData, setFormData] = useState({
+            name: editingWallet?.name || '',
+            type: editingWallet?.type || 'bank',
+            balance: editingWallet?.balance || 0,
+            color: editingWallet?.color || '#3B82F6',
+        });
+
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            if (!formData.name.trim()) return;
+
+            let res;
+
+            try {
+                if (editingWallet) {
+                    res = await fetch(`http://localhost:8080/wallets/${parseInt(editingWallet.walletId)}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                            balance: parseFloat(formData.balance),
+                        }),
+                    });
+                } else {
+                    res = await fetch('http://localhost:8080/wallets', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-id': String(user?.id),
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                            balance: parseFloat(formData.balance),
+                        }),
+                    });
+                }
+
+
+                let data = null;
+                const text = await res.text();
+                if (text) {
+                    data = JSON.parse(text);
+                }
+
+                if (res.ok) {
+                    if (editingWallet && data) {
+                        setUserWallet(user_Wallet.map(wallet =>
+                            wallet.walletId === editingWallet.walletId ? data : wallet
+                        ));
+                    } else if (data) {
+                        setUserWallet([...user_Wallet, data]);
+                    }
+
+                    user_Wallet.map()
+                    setShowWalletModal(false);
+                    setEditingWallet(null);
+                    setFormData({ name: '', type: 'bank', balance: 0, color: '#3B82F6' });
+
+                    // setUserWallet(user_Wallet.map(wallet =>
+                    //     wallet.walletId === editingWallet.walletId
+                    //         ? editingWallet // หรือ data ใหม่จาก API
+                    //         : wallet
+                    // ));
+                    // window.location.reload();
+                } else {
+                    console.error('API Error:', data || res.statusText);
+                }
+            } catch (err) {
+                console.error('Fetch Error:', err);
+            }
+        };
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg max-w-md w-full p-6">
+                    <h3 className="text-lg font-semibold mb-4">
+                        {editingWallet ? 'Edit Wallet' : 'Add New Wallet'}
+                    </h3>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                            <input
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                                placeholder="Wallet name"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                            <select
+                                value={formData.type}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                            >
+                                <option value="bank">Bank Account</option>
+                                <option value="cash">Cash</option>
+                                <option value="credit">Credit Card</option>
+                                <option value="savings">Savings</option>
+                                <option value="investment">Investment</option>
+                                <option value="digital">Digital Wallet</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Balance</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={formData.balance}
+                                onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                                placeholder="0.00"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="color"
+                                    value={formData.color}
+                                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                                    className="w-12 h-10 border border-gray-300 rounded-lg"
+                                />
+                                <div
+                                    className="w-10 h-10 rounded-lg border-2 border-gray-300"
+                                    style={{ backgroundColor: formData.color }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex space-x-3 pt-4">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowWalletModal(false);
+                                    setEditingWallet(null);
+                                }}
+                                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                            >
+                                {editingWallet ? 'Update' : 'Add'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+    };
+    // Add this delete function
+    const deleteWallet = async (walletId) => {
+        if (!window.confirm('Are you sure you want to delete this wallet?')) return;
+
+        try {
+            const res = await fetch(`http://localhost:8080/wallets/${parseInt(walletId)}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-id': String(user?.id),
+                },
+            });
+
+            if (res.ok) {
+                // ลบ wallet ออกจาก state
+                setUserWallet(user_Wallet.filter(wallet => wallet.walletId !== walletId));
+                console.log('Wallet deleted successfully');
+            } else {
+                const text = await res.text();
+                const data = text ? JSON.parse(text) : null;
+                console.error('API Error:', data || res.statusText);
+            }
+        } catch (err) {
+            console.error('Fetch Error:', err);
+        }
+    };
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
@@ -242,8 +545,8 @@ export function Settings_PPM({
                                         key={section.id}
                                         onClick={() => setActiveSection(section.id)}
                                         className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${activeSection === section.id
-                                                ? 'bg-emerald-100 text-emerald-700'
-                                                : 'text-gray-600 hover:bg-gray-100'
+                                            ? 'bg-emerald-100 text-emerald-700'
+                                            : 'text-gray-600 hover:bg-gray-100'
                                             }`}
                                     >
                                         <Icon className="w-5 h-5 mr-3" />
@@ -299,7 +602,7 @@ export function Settings_PPM({
                                                         <Edit2 className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        onClick={() => deleteCategory(category.id)}
+                                                        onClick={() => deleteCategory(category.categoryId)}
                                                         className="p-2 text-gray-500 hover:text-red-600 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -312,6 +615,8 @@ export function Settings_PPM({
                             </div>
                         )}
 
+
+                        {/*  Payment Section  */}
                         {activeSection === 'payment-methods' && (
                             <div className="p-6">
                                 <div className="flex items-center justify-between mb-6">
@@ -350,7 +655,7 @@ export function Settings_PPM({
                                                         <Edit2 className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        onClick={() => deletePaymentMethod(method.id)}
+                                                        onClick={() => deletePaymentMethod(method.paymentMethodId)}
                                                         className="p-2 text-gray-500 hover:text-red-600 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -362,6 +667,74 @@ export function Settings_PPM({
                                 </div>
                             </div>
                         )}
+
+                        {/* Wallet Section  */}
+                        {activeSection === 'wallet' && (
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-xl font-semibold text-gray-900">Wallets</h2>
+                                    <button
+                                        onClick={() => setShowWalletModal(true)}
+                                        className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                                    >
+                                        <Plus className="w-5 h-5 mr-2" />
+                                        Add Wallet
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {user_Wallet.map((wallet) => (
+                                        <div
+                                            key={wallet.walletId}
+                                            className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center">
+                                                    <div
+                                                        className="w-4 h-4 rounded-full mr-3"
+                                                        style={{ backgroundColor: wallet.color }}
+                                                    />
+                                                    <div>
+                                                        <p className="font-medium text-gray-900">{wallet.name}</p>
+                                                        <p className="text-sm text-gray-500 capitalize">{wallet.type}</p>
+                                                        <p className="text-sm font-medium text-emerald-600">
+                                                            ${wallet.balance?.toFixed(2) || '0.00'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingWallet(wallet);
+                                                            setShowWalletModal(true);
+                                                        }}
+                                                        className="p-2 text-gray-500 hover:text-emerald-600 transition-colors"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => deleteWallet(wallet.walletId)}
+                                                        className="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {user_Wallet.length === 0 && (
+                                    <div className="text-center py-8">
+                                        <Wallet className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                        <p className="text-gray-500">No wallets added yet</p>
+                                        <p className="text-sm text-gray-400">Add your first wallet to get started</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+
 
                         {activeSection === 'profile' && (
                             <div className="p-6">
@@ -397,6 +770,7 @@ export function Settings_PPM({
             {/* Modals */}
             {showCategoryModal && <CategoryModal />}
             {showPaymentModal && <PaymentMethodModal />}
+            {showWalletModal && <WalletModal />}
         </div>
     );
 }
