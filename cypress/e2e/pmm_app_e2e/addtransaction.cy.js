@@ -18,7 +18,7 @@ describe('addtransaction page', () => {
     
     cy.get('.p-4 > :nth-child(2)').click()
     cy.get('.mb-6 > .flex').click()
-    cy.get('.space-y-4 > :nth-child(1) > .w-full').type('test payment3')
+    cy.get('.space-y-4 > :nth-child(1) > .w-full').type('test payment3') //เปลี่ยนไปเรี่อยๆ
     cy.get('.space-x-3 > .bg-emerald-600').click()
     // add income
     cy.get('.ml-10 > :nth-child(2)').click()

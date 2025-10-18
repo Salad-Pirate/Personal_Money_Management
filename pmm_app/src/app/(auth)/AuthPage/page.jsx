@@ -59,7 +59,7 @@ const AuthPage = ({ onLogin }) => {
                 if (res.ok) {
                     onLogin({
                         id: data.userId,
-                        name: formData.displayname
+                        name: data.displayName
                     })
                     
                     setUserID(data.userId)
@@ -91,7 +91,7 @@ const AuthPage = ({ onLogin }) => {
                 if (res.ok) {
                     onLogin({
                         id: data.userId,
-                        name: formData.displayname
+                        name: data.displayName
                     })
                     setUserID(data.userId)
                 } else {
