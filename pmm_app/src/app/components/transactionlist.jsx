@@ -13,8 +13,8 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
           transaction.note?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           transaction.transactionLocation?.toLowerCase().includes(searchTerm.toLowerCase());
         
-        const matchesType = filterType === 'all' || transaction.type === filterType;
-        const matchesCategory = !filterCategory || transaction.category === filterCategory;
+        const matchesType = filterType === 'all' || transaction.transactionType === filterType;
+        const matchesCategory = !filterCategory || transaction.categoryName?.toLowerCase() === filterCategory?.toLowerCase();
         
         return matchesSearch && matchesType && matchesCategory;
       })
