@@ -1,9 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Calendar } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
 export function Dashboard({ transactions }) {
-  const currentMonth = new Date().toISOString().slice(0, 7);
+  //  เพิ่ม state เลือกเดือน
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const currentMonth = selectedMonth;
+
   const legendMap = {
     income: "รายรับ",
     expense: "รายจ่าย",
@@ -55,7 +58,10 @@ export function Dashboard({ transactions }) {
   const dailyChartData = useMemo(() => {
     const dailyStats = {};
 
-    transactions.forEach(transaction => {
+    // ✅ กรองเฉพาะเดือนที่เลือก
+    const filteredTransactions = transactions.filter((t) => t.occuredAt.startsWith(currentMonth));
+
+    filteredTransactions.forEach(transaction => {
       const date = transaction.occuredAt.split('T')[0]; // แยกเอาเฉพาะวันที่
 
       if (!dailyStats[date]) {
@@ -79,9 +85,8 @@ export function Dashboard({ transactions }) {
 
     // แปลงเป็น array และเรียงตามวันที่
     return Object.values(dailyStats)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .slice(-30); // เอาเฉพาะ 30 วันล่าสุด
-  }, [transactions]);
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [transactions, currentMonth]);
 
   const formatChartDate = (dateString) => {
     const date = new Date(dateString);
@@ -91,12 +96,50 @@ export function Dashboard({ transactions }) {
     });
   };
 
+//  สร้างรายการเดือนย้อนหลัง 12 เดือน
+const availableMonths = useMemo(() => {
+  const months = [];
+  const now = new Date();
+
+  // สร้างเดือนย้อนหลัง 12 เดือนรวมเดือนปัจจุบัน
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    months.push(monthStr);
+  }
+
+  // กลับลำดับจากมกราคม → เดือนปัจจุบัน
+  return months;
+}, []);
+
+
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Welcome back! Here's your financial overview.</p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-600 mt-2">Welcome back! Here's your financial overview.</p>
+          </div>
+
+          {/*  ตัวเลือกเดือน */}
+          <div>
+            <label className="text-2x1 font-bold text-gray-700 mr-2">Select Date:</label>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            >
+              {availableMonths.map((month) => (
+                <option key={month} value={month}>
+                  {new Date(month + '-01').toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                  })}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -168,7 +211,7 @@ export function Dashboard({ transactions }) {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Daily Income & Expense Trend</h3>
-              <p className="text-sm text-gray-600">รายรับ-รายจ่ายรายวันย้อนหลัง 30 วัน</p>
+              <p className="text-sm text-gray-600">รายรับ-รายจ่ายรายวันของเดือนที่เลือก</p>
             </div>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -209,7 +252,7 @@ export function Dashboard({ transactions }) {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Daily Income & Expense Trend</h3>
-              <p className="text-sm text-gray-600">รายรับ-รายจ่ายรายวันย้อนหลัง 30 วัน</p>
+              <p className="text-sm text-gray-600">รายรับ-รายจ่ายรายวันของเดือนที่เลือก</p>
             </div>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -260,9 +303,6 @@ export function Dashboard({ transactions }) {
               </ResponsiveContainer>
             </div>
           </div>
-
-
-
         </div>
 
         {/* Recent Transactions */}
