@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Search, Filter, TrendingUp, TrendingDown, Calendar, MapPin } from 'lucide-react';
+import { saveAs } from 'file-saver';
 
 export function TransactionsList({ transactions, categories, paymentMethods }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,16 +13,16 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
         const matchesSearch = transaction.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           transaction.note?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           transaction.transactionLocation?.toLowerCase().includes(searchTerm.toLowerCase());
-        
+
         const matchesType = filterType === 'all' || transaction.transactionType === filterType;
         const matchesCategory = !filterCategory || transaction.categoryName?.toLowerCase() === filterCategory?.toLowerCase();
-        
+
         return matchesSearch && matchesType && matchesCategory;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, searchTerm, filterType, filterCategory]);
 
-  const formatCurrency = (amount) => 
+  const formatCurrency = (amount) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -41,6 +42,19 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
   const getCategoryColor = (categoryName) => {
     const category = categories.find(cat => cat.categoryName === categoryName);
     return category?.color || '#6B7280';
+  };
+
+  const handleExport = () => {
+    // Convert JSON → CSV
+    const csvHeader = Object.keys(filteredTransactions[0]).join(',') + '\n';
+    const csvRows = filteredTransactions.map(row =>
+      Object.values(row).join(',')
+    );
+    const csvString = csvHeader + csvRows.join('\n');
+
+    // Convert to Blob for download
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'transactions.csv');
   };
 
   return (
@@ -95,6 +109,11 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
               ))}
             </select>
           </div>
+
+          {/* Button Click to Export CSV*/}
+          <button onClick={handleExport} className="p-3 bg-blue-500 text-white rounded-full cursor-pointer hover:bg-blue-700 hover:duration-300 duration-300">
+            Export CSV
+          </button>
         </div>
       </div>
 
@@ -118,7 +137,7 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
               <div key={transaction.transactionId} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <div 
+                    <div
                       className="w-12 h-12 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: getCategoryColor(transaction.categoryName) + '20' }}
                     >
@@ -131,9 +150,9 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
                     <div className="ml-4">
                       <div className="flex items-center">
                         <h3 className="text-lg font-medium text-gray-900">{transaction.categoryName}</h3>
-                        <span 
+                        <span
                           className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          style={{ 
+                          style={{
                             backgroundColor: getCategoryColor(transaction.categoryName) + '20',
                             color: getCategoryColor(transaction.categoryName)
                           }}
@@ -160,9 +179,8 @@ export function TransactionsList({ transactions, categories, paymentMethods }) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-xl font-bold ${
-                      transaction.categoryType === 'Income' ? 'text-emerald-600' : 'text-red-600'
-                    }`}>
+                    <p className={`text-xl font-bold ${transaction.categoryType === 'Income' ? 'text-emerald-600' : 'text-red-600'
+                      }`}>
                       {transaction.categoryType === 'Income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                     </p>
                   </div>
