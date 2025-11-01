@@ -1,4 +1,4 @@
-// File: C:\Users\ton-1\Documents\GitHub\Personal_Money_Management\pmm_app\src\app\layout.js
+// File: C:\Users\BANKII\Documents\GitHub\Personal_Money_Management\pmm_app\src\app\layout.js
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

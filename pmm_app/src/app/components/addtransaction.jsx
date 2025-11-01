@@ -106,6 +106,48 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
       if (res.ok) {
         const data = await res.json();
         console.log("BE response:", data);
+
+        // Update wallet balance
+        const transactionAmount = parseFloat(formData.amount);
+        const updatedWallets = await Promise.all(
+          user_Wallet.map(async (wallet) => {
+            if (wallet.walletId === formData.wallet.walletId) {
+              const newBalance =
+                transactionType === "Expense"
+                  ? wallet.balance - transactionAmount
+                  : wallet.balance + transactionAmount;
+
+              const res = await fetch(
+                `http://localhost:8080/wallets/${parseInt(wallet.walletId)}`,
+                {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-User-id": String(user?.id),
+                  },
+                  body: JSON.stringify({
+                    ...wallet,
+                    balance: parseFloat(newBalance),
+                  }),
+                }
+              );
+
+              if (!res.ok) {
+                console.log(wallet);
+                console.log(res);
+                console.error(`Failed to update wallet ${wallet.walletId}`);
+              }
+
+              return { ...wallet, balance: newBalance };
+            }
+
+            return wallet;
+          })
+        );
+
+        setUserWallet(updatedWallets);
+        setCurrentWallet(updatedWallets.find(w => w.walletId === formData.wallet.walletId));
+
         alert("Successful");
         setFormData(
           {
@@ -115,7 +157,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
             date: new Date().toISOString().slice(0, 16),
             location: '',
             note: '',
-            wallet: user_Wallet[0] || null,
+            wallet: updatedWallets[0] || null,
           }
         )
       } else {
