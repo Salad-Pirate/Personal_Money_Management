@@ -19,7 +19,7 @@ export const PmmContextProvider = (props) => {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
-                    "X-User-id": String(user?.id),
+                    "X-User-id": parseInt(user?.id),
                 }
             });
             const data = await res.json();
@@ -41,7 +41,7 @@ export const PmmContextProvider = (props) => {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
-                    "X-User-id": String(user?.id),
+                    "X-User-id": parseInt(user?.id),
                 }
             });
             const data = await res.json();
@@ -64,7 +64,7 @@ export const PmmContextProvider = (props) => {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
-                    "X-User-id": String(user?.id),
+                    "X-User-id": parseInt(user?.id),
                 }
             });
             const data = await res.json();
@@ -87,7 +87,7 @@ export const PmmContextProvider = (props) => {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
-                    "X-User-id": String(user?.id),
+                    "X-User-id": parseInt(user?.id),
                 }
             });
             const data = await res.json();

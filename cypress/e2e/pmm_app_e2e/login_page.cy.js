@@ -13,7 +13,7 @@ describe('login page', () => {
 
   it('logs in successfully with valid credentials', () => {
     
-    cy.get(':nth-child(1) > .relative > .w-full').type('abc@gmail.com')
+    cy.get(':nth-child(1) > .relative > .w-full').type('abcd@gmail.com')
     
     cy.get(':nth-child(2) > .relative > .w-full').type('123456789')
     

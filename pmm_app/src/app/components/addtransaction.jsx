@@ -96,7 +96,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-id': String(user?.id),
+          'X-User-id': parseInt(user?.id),
         },
         body: JSON.stringify({
           ...payload,
@@ -180,7 +180,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-id': String(user?.id),
+          'X-User-id': parseInt(user?.id),
         },
         body: JSON.stringify({
           name: newWalletData.name,
