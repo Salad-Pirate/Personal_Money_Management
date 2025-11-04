@@ -43,7 +43,7 @@ const AuthPage = ({ onLogin }) => {
         // Login
         if (validateForm() && isLogin) {
             try {
-                const res = await fetch('http://localhost:8080/auth/login', {
+                const res = await fetch('api/auth/login', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json"
@@ -74,7 +74,7 @@ const AuthPage = ({ onLogin }) => {
         // Register
         if (validateForm() && !isLogin) {
             try {
-                const res = await fetch('http://localhost:8080/auth/register', {
+                const res = await fetch('api/auth/register', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json"
