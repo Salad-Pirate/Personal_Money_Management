@@ -92,7 +92,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
 
     let res;
     try {
-      res = await fetch('api/transactions', {
+      res = await fetch('/Salad-Pirate/api/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
                   : wallet.balance + transactionAmount;
 
               const res = await fetch(
-                `api/wallets/${parseInt(wallet.walletId)}`,
+                `/Salad-Pirate/api/wallets/${parseInt(wallet.walletId)}`,
                 {
                   method: "PUT",
                   headers: {
@@ -176,7 +176,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     if (newWalletData.name.trim() === '') return;
 
     try {
-      const res = await fetch('api/wallets', {
+      const res = await fetch('/Salad-Pirate/api/wallets', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

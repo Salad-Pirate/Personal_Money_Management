@@ -44,7 +44,7 @@ export function Settings_PPM({
 
             try {
                 if (editingCategory) {
-                    res = await fetch(`api/categories/${parseInt(editingCategory.categoryId)}`, {
+                    res = await fetch(`/Salad-Pirate/api/categories/${parseInt(editingCategory.categoryId)}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export function Settings_PPM({
                         body: JSON.stringify(formData),
                     });
                 } else {
-                    res = await fetch('api/categories', {
+                    res = await fetch('/Salad-Pirate/api/categories', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ export function Settings_PPM({
 
             try {
                 if (editingPayment) {
-                    res = await fetch(`api/payment-methods/${parseInt(editingPayment.paymentMethodId)}`, {
+                    res = await fetch(`/Salad-Pirate/api/payment-methods/${parseInt(editingPayment.paymentMethodId)}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ export function Settings_PPM({
                         body: JSON.stringify(formData),
                     });
                 } else {
-                    res = await fetch('api/payment-methods', {
+                    res = await fetch('/Salad-Pirate/api/payment-methods', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -288,7 +288,7 @@ export function Settings_PPM({
         if (!window.confirm('Are you sure you want to delete this category?')) return;
 
         try {
-            const res = await fetch(`api/categories/${categoryId}`, {
+            const res = await fetch(`/Salad-Pirate/api/categories/${categoryId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-User-id': parseInt(user?.id),
@@ -317,7 +317,7 @@ export function Settings_PPM({
         }
 
         try {
-            const res = await fetch(`api/payment-methods/${parseInt(paymentId, 10)}`, {
+            const res = await fetch(`/Salad-Pirate/api/payment-methods/${parseInt(paymentId, 10)}`, {
                 method: 'DELETE',
                 headers: {
                     'X-User-id': parseInt(user?.id),
@@ -354,7 +354,7 @@ export function Settings_PPM({
 
             try {
                 if (editingWallet) {
-                    res = await fetch(`api/wallets/${parseInt(editingWallet.walletId)}`, {
+                    res = await fetch(`/Salad-Pirate/api/wallets/${parseInt(editingWallet.walletId)}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -366,7 +366,7 @@ export function Settings_PPM({
                         }),
                     });
                 } else {
-                    res = await fetch('api/wallets', {
+                    res = await fetch('/Salad-Pirate/api/wallets', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -506,7 +506,7 @@ export function Settings_PPM({
         if (!window.confirm('Are you sure you want to delete this wallet?')) return;
 
         try {
-            const res = await fetch(`api/wallets/${parseInt(walletId)}`, {
+            const res = await fetch(`/Salad-Pirate/api/wallets/${parseInt(walletId)}`, {
                 method: 'DELETE',
                 headers: {
                     'X-User-id': parseInt(user?.id),

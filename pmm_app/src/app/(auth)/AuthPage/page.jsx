@@ -43,7 +43,7 @@ const AuthPage = ({ onLogin }) => {
         // Login
         if (validateForm() && isLogin) {
             try {
-                const res = await fetch('api/auth/login', {
+                const res = await fetch('/Salad-Pirate/api/auth/login', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json"
@@ -74,7 +74,7 @@ const AuthPage = ({ onLogin }) => {
         // Register
         if (validateForm() && !isLogin) {
             try {
-                const res = await fetch('api/auth/register', {
+                const res = await fetch('/Salad-Pirate/api/auth/register', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json"
