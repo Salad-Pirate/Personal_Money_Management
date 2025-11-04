@@ -92,7 +92,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
 
     let res;
     try {
-      res = await fetch('http://localhost:8080/transactions', {
+      res = await fetch('api/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
                   : wallet.balance + transactionAmount;
 
               const res = await fetch(
-                `http://localhost:8080/wallets/${parseInt(wallet.walletId)}`,
+                `api/wallets/${parseInt(wallet.walletId)}`,
                 {
                   method: "PUT",
                   headers: {
@@ -176,7 +176,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     if (newWalletData.name.trim() === '') return;
 
     try {
-      const res = await fetch('http://localhost:8080/wallets', {
+      const res = await fetch('api/wallets', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

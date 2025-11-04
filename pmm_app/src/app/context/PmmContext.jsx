@@ -15,7 +15,7 @@ export const PmmContextProvider = (props) => {
     const [user_transaction , setUserTransaction] = useState([]);
     const Get_Wallet = async () => {
         try {
-            const res = await fetch('http://localhost:8080/wallets', {
+            const res = await fetch('api/wallets', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
@@ -37,7 +37,7 @@ export const PmmContextProvider = (props) => {
 
     const Get_userPaymet = async () => {
         try {
-            const res = await fetch('http://localhost:8080/payment-methods', {
+            const res = await fetch('api/payment-methods', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
@@ -60,7 +60,7 @@ export const PmmContextProvider = (props) => {
 
     const Get_Category = async () => {
         try {
-            const res = await fetch('http://localhost:8080/categories', {
+            const res = await fetch('api/categories', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
@@ -83,7 +83,7 @@ export const PmmContextProvider = (props) => {
 
     const Get_Transaction = async () =>{
         try {
-            const res = await fetch('http://localhost:8080/transactions', {
+            const res = await fetch('api/transactions', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
