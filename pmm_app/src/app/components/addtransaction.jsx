@@ -4,6 +4,10 @@ import { PmmContext } from '../context/PmmContext';
 import { ArrowLeft, DollarSign, Calendar, MapPin, FileText, CreditCard, Tag, Wallet, Plus, X } from 'lucide-react';
 
 export function AddTransaction({ categories, paymentMethods, onAddTransaction, onCancel }) {
+  const [file, setFile] = useState(null);
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+  
   const [user] = useLocalStorage("currentUser", null);
   const { user_Wallet, setUserWallet } = useContext(PmmContext);
   const [current_wallet, setCurrentWallet] = useState(user_Wallet[0] || null);

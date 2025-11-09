@@ -57,3 +57,33 @@ __MACOSX/
 # === Misc ===
 *.bak
 *.tmp
+
+
+# === Next.js build artifacts ===
+.next/
+.next/cache/
+.next/server/
+.next/static/
+.next/trace
+.next/prerender-manifest.json
+.next/app-build-manifest.json
+.next/app-paths-manifest.json
+.next/webpack-runtime.js
+.next/**/*.pack.gz
+.next/**/*.pack.gz.old
+.next/**/*.js.old
+
+# === Webpack / Build artifacts ===
+webpack-runtime.js
+*.pack.gz
+*.pack.gz.old
+*.manifest.json
+
+# === Temporary runtime / analysis files ===
+trace
+*.trace
+
+# === Optional: Ignore local test builds ===
+*.old
+*.bak
+*.cache.json
