@@ -7,7 +7,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const [user] = useLocalStorage("currentUser", null);
   const { user_Wallet, setUserWallet } = useContext(PmmContext);
   const [current_wallet, setCurrentWallet] = useState(user_Wallet[0] || null);
@@ -219,6 +219,28 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     }
   };
 
+
+  const handleSubmitImage = async (e) => {
+    e.preventDefault();
+    if (!file) return;
+
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/ocr", {
+      method: "POST",
+      body: formData,
+    });
+    console.log("Return from OCR ######### ")
+    console.log(res)
+    const data = await res.json();
+    
+    setText(data.text);
+    setLoading(false);
+
+    
+  };
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -526,7 +548,6 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
                 />
               </div>
             </div>
-
             {/* Buttons */}
             <div className="flex space-x-4 pt-6">
               <button
@@ -544,6 +565,34 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
               </button>
             </div>
           </form>
+        </div>
+
+
+        <div className="p-6 border-2 rounded-4xl m-5 border-gray-300">
+          <h1 className="text-xl font-bold mb-4">Upload receipt!</h1>
+
+          <form onSubmit={handleSubmitImage}>
+            <div className='flex justify-between'>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
+              >
+                {loading ? "Processing..." : "Upload"}
+              </button>
+            </div>
+          </form>
+
+          {text && (
+            <div className="mt-4">
+              <h2 className="font-semibold">Extracted Text:</h2>
+              <pre className="bg-gray-100 p-2 rounded">{text}</pre>
+            </div>
+          )}
         </div>
       </div>
     </div>

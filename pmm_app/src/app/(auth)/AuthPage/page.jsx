@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useContext } from 'react';
 import { DollarSign, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { PmmContext } from '../../context/PmmContext';
@@ -43,7 +44,7 @@ const AuthPage = ({ onLogin }) => {
         // Login
         if (validateForm() && isLogin) {
             try {
-                const res = await fetch('/Salad-Pirate/api/auth/login', {
+                const res = await fetch('http://localhost:8080/auth/login', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json"
@@ -74,7 +75,7 @@ const AuthPage = ({ onLogin }) => {
         // Register
         if (validateForm() && !isLogin) {
             try {
-                const res = await fetch('/Salad-Pirate/api/auth/register', {
+                const res = await fetch('http://localhost:8080/auth/register', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json"

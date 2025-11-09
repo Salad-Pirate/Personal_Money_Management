@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import Tesseract from "tesseract.js";
 import { NextResponse } from "next/server";
 
