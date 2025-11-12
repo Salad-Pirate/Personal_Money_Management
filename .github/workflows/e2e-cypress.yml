@@ -2,9 +2,9 @@ name: E2E Test (FE with Cypress and Next JS)
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "test-k8s" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "test-k8s" ]
 
 jobs:
   e2e:
