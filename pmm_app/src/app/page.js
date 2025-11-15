@@ -16,28 +16,6 @@ export default function Home() {
   const [userID,setUserID] = useLocalStorage("UserID", null);
   const { userPaymet,setUserPaymet,userCategory, setUserCategory, user_transaction } = useContext(PmmContext)
 
-  const [transactions, setTransactions] = useState([
-    { id: 1, type: "income", amount: 1200, category: "Salary", date: "2025-09-01T10:30", paymentMethod: "Bank" },
-    { id: 2, type: "expense", amount: 300, category: "Food", date: "2025-09-02T12:00", paymentMethod: "Cash" },
-  ]);
-
-
-  const [categories, setCategories] = useLocalStorage('categories', [
-        { id: '1', name: 'Food & Dining', type: 'expense', color: '#EF4444' },
-        { id: '2', name: 'Transportation', type: 'expense', color: '#F97316' },
-        { id: '3', name: 'Shopping', type: 'expense', color: '#8B5CF6' },
-        { id: '4', name: 'Salary', type: 'income', color: '#10B981' },
-        { id: '5', name: 'Freelance', type: 'income', color: '#06B6D4' },
-    ]);
-
-
-
-
-
-  const handleAddTransaction = (transaction) => {
-    setTransactions([...transactions, { id: transactions.length + 1, ...transaction }]);
-    setCurrentPage("dashboard");
-  };
 
   if (!user) return <Login onLogin={setUser} />;
 
@@ -54,7 +32,6 @@ export default function Home() {
           <AddTransaction
             categories={userCategory}
             paymentMethods={userPaymet}
-            onAddTransaction={handleAddTransaction}
             onCancel={() => setCurrentPage("dashboard")}
           />
         )}

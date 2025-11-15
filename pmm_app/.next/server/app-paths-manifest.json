@@ -1,5 +1,4 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/ocr/route": "app/api/ocr/route.js",
+  "/suggest-location/page": "app/suggest-location/page.js",
   "/page": "app/page.js"
 }

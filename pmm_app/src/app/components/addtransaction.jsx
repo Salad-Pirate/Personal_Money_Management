@@ -1,12 +1,15 @@
-import { useContext, useState } from 'react';
+import { useContext, useState,useEffect } from 'react';
 import { useLocalStorage } from "usehooks-ts";
 import { PmmContext } from '../context/PmmContext';
 import { ArrowLeft, DollarSign, Calendar, MapPin, FileText, CreditCard, Tag, Wallet, Plus, X } from 'lucide-react';
+import { parse } from 'path';
 
-export function AddTransaction({ categories, paymentMethods, onAddTransaction, onCancel }) {
+export function AddTransaction({ categories, paymentMethods, onCancel }) {
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [lat, setLat] = useState(null);
+  const [lng, setLng] = useState(null);
 
   const [user] = useLocalStorage("currentUser", null);
   const { user_Wallet, setUserWallet } = useContext(PmmContext);
@@ -18,6 +21,14 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     balance: 0,
     color: '#3B82F6'
   });
+  
+  // --- Get current location ---
+    useEffect(() => {
+        navigator.geolocation.getCurrentPosition((position) => {
+            setLat(position.coords.latitude);
+            setLng(position.coords.longitude);
+        });
+    }, []);
 
   const [transactionType, setTransactionType] = useState("Expense");
   const [formData, setFormData] = useState({
@@ -79,10 +90,46 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     setFormData({ ...formData, wallet: wallet });
   };
 
+
+  async function geocode(placeName, currentLat, currentLng) {
+
+    try {
+      const res = await fetch(`/api/geocode?query=${placeName}`);
+      const data = await res.json();
+      console.log("@####### Data from google map",data)
+      if (data.status !== "OK" || data.results.length === 0) {
+        console.warn(`Location not found: "${placeName}", fallback to current location`);
+        return {
+          lat: currentLat,
+          lng: currentLng
+        };
+      }
+
+      return {
+        lat: data.results[0].geometry.location.lat,
+        lng: data.results[0].geometry.location.lng,
+      };
+
+    } catch (err) {
+      console.error("Geocode error:", err);
+
+      
+      return {
+        lat: currentLat,
+        lng: currentLng
+      };
+    }
+  }
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    const geo = await geocode(formData.location,lat,lng);
+
+    
+    // เพิ่ม lat , long เข้าไป ด้วย
     const payload = {
       categoryId: formData.category.categoryId,
       paymentMethodId: formData.paymentMethod.paymentMethodId,
@@ -92,11 +139,14 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
       occuredAt: formatDateForBackend(formData.date),
       transactionLocation: formData.location,
       note: formData.note,// ส่งเฉพาะ id ไป backend
+      latitude: geo.lat,
+      longitude:geo.lng
+
     };
 
     let res;
     try {
-      res = await fetch('/Salad-Pirate/api/transactions', {
+      res = await fetch('http://muict.app/salad-pirate-backend/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,7 +172,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
                   : wallet.balance + transactionAmount;
 
               const res = await fetch(
-                `/Salad-Pirate/api/wallets/${parseInt(wallet.walletId)}`,
+                `http://muict.app/salad-pirate-backend/wallets/${parseInt(wallet.walletId)}`,
                 {
                   method: "PUT",
                   headers: {
@@ -180,7 +230,7 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     if (newWalletData.name.trim() === '') return;
 
     try {
-      const res = await fetch('/Salad-Pirate/api/wallets', {
+      const res = await fetch('http://muict.app/salad-pirate-backend/wallets', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -235,11 +285,11 @@ export function AddTransaction({ categories, paymentMethods, onAddTransaction, o
     console.log("Return from OCR ######### ")
     console.log(res)
     const data = await res.json();
-    
+
     setText(data.text);
     setLoading(false);
 
-    
+
   };
 
   return (
