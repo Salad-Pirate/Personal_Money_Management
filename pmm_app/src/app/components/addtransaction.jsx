@@ -214,6 +214,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
             wallet: updatedWallets[0] || null,
           }
         )
+        window.location.reload();
       } else {
         alert("UnSuccessful");
         console.log("Error ", res);
@@ -286,7 +287,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
     console.log(res)
     const data = await res.json();
 
-    setText(data.text);
+    setFormData({ ...formData, note: data.text })
     setLoading(false);
 
 

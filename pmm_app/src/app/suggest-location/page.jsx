@@ -7,21 +7,11 @@ import { PmmContext } from '../context/PmmContext';
 import { Search, Filter, TrendingUp, TrendingDown, Calendar, MapPin } from 'lucide-react';
 
 const Suggest = () => {
-    const [lat, setLat] = useState(null);
-    const [lng, setLng] = useState(null);
-    const { user_transaction } = useContext(PmmContext)
+    const {lng,lat,Get_Transaction,user_transaction} = useContext(PmmContext)
 
-    // --- Get current location ---
-    useEffect(() => {
-        navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude
-            const long = position.coords.longitude
-            setLat(lat);
-            setLng(long);
-        });
-    }, []);
-    
-
+    useEffect(()=>{
+       Get_Transaction() 
+    },[user_transaction])
     function getDistanceKm(lat1, lng1, lat2, lng2) {
         const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -37,7 +27,7 @@ const Suggest = () => {
         return R * c;
     }
 
-    function filterNearbyLocations(currentLat, currentLng, transactions, maxDistanceKm = 15) {
+    function filterNearbyLocations(currentLat, currentLng, transactions, maxDistanceKm = 50) {
         return transactions
             .map(tx => ({
                 ...tx,
@@ -46,33 +36,39 @@ const Suggest = () => {
             .filter(tx => tx.distance <= maxDistanceKm);
     }
 
-     // ป้องกัน crash ตอน lat/lng ยังไม่โหลด
-
     if (lat === null || lng === null) {
-        return <p className="p-6">กำลังหาตำแหน่งปัจจุบัน...</p>;
+        return <div className="flex items-center justify-center mt-20"> Finding your location ...</div>;
     }
 
     const nearbyLocations = filterNearbyLocations(lat, lng, user_transaction);
 
     const formatCurrency = (amount) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-    
+        new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+        }).format(amount);
+
     const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 pr-24 pl-24 pt-7">
+            <div className='flex items-center gap-3 border-l-4 border-indigo-600 pl-4 mb-5'>
+                <div className='bg-indigo-600 p-3 rounded-lg shadow-md'>
+                    <MapPin className='text-white' size={28} />
+                </div>
+                <h1 className='text-4xl font-bold text-gray-800 tracking-tight'>
+                    Nearby Location
+                </h1>
+            </div>
             {nearbyLocations.length === 0 ? (
                 <div className="px-6 py-12 text-center">
                     <h1> No have transaction that nearby from your current location </h1>

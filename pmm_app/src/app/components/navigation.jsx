@@ -1,5 +1,5 @@
-import { Home, Plus, List, Settings, DollarSign } from 'lucide-react';
-
+import { Home, Plus, List, Settings, DollarSign, MapPin} from 'lucide-react';
+import Link from 'next/link';
 export function Navigation({ currentPage, onPageChange, user }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -26,11 +26,10 @@ export function Navigation({ currentPage, onPageChange, user }) {
                     <button
                       key={item.id}
                       onClick={() => onPageChange(item.id)}
-                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        currentPage === item.id
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                      }`}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${currentPage === item.id
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                        }`}
                     >
                       <Icon className="w-4 h-4 inline-block mr-2" />
                       {item.label}
@@ -39,6 +38,15 @@ export function Navigation({ currentPage, onPageChange, user }) {
                 })}
               </div>
             </div>
+            <Link
+              href='/suggest-location'
+              className="px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors mr-4"
+              aria-label="Suggest Location"
+            >
+              <button>
+                <MapPin className="w-5 h-5" />
+              </button>
+            </Link>
             <div className="flex items-center">
               <span className="text-sm text-gray-700">Welcome, {user.name}!</span>
             </div>
@@ -55,11 +63,10 @@ export function Navigation({ currentPage, onPageChange, user }) {
               <button
                 key={item.id}
                 onClick={() => onPageChange(item.id)}
-                className={`flex flex-col items-center justify-center space-y-1 ${
-                  currentPage === item.id
-                    ? 'text-emerald-600'
-                    : 'text-gray-500'
-                }`}
+                className={`flex flex-col items-center justify-center space-y-1 ${currentPage === item.id
+                  ? 'text-emerald-600'
+                  : 'text-gray-500'
+                  }`}
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-xs">{item.label}</span>

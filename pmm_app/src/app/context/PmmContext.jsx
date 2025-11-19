@@ -13,6 +13,20 @@ export const PmmContextProvider = (props) => {
     const [userCategory, setUserCategory] = useState([]);
     const [user_id, setUser_id] = useState(null);
     const [user_transaction , setUserTransaction] = useState([]);
+    const [lat, setLat] = useState(null);
+    const [lng, setLng] = useState(null);
+
+
+    // --- Get current location ---
+        useEffect(() => {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const lat = position.coords.latitude
+                const long = position.coords.longitude
+                setLat(lat);
+                setLng(long);
+            });
+        }, []);
+
     const Get_Wallet = async () => {
         try {
             const res = await fetch('http://muict.app/salad-pirate-backend/wallets', {
@@ -112,7 +126,8 @@ export const PmmContextProvider = (props) => {
 
     const value = {
         user_Wallet, setUserWallet, user_id, setUser_id, userPaymet, setUserPaymet
-        ,userCategory, setUserCategory,user_transaction , setUserTransaction
+        ,userCategory, setUserCategory,user_transaction , setUserTransaction, lat, setLat,lng, setLng,
+        Get_Transaction
     };
 
 
