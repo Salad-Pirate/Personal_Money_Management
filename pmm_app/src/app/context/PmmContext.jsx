@@ -29,7 +29,7 @@ export const PmmContextProvider = (props) => {
 
     const Get_Wallet = async () => {
         try {
-            const res = await fetch('http://muict.app/salad-pirate-backend/wallets', {
+            const res = await fetch('https://muict.app/salad-pirate-backend/wallets', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
@@ -51,7 +51,7 @@ export const PmmContextProvider = (props) => {
 
     const Get_userPaymet = async () => {
         try {
-            const res = await fetch('http://muict.app/salad-pirate-backend/payment-methods', {
+            const res = await fetch('https://muict.app/salad-pirate-backend/payment-methods', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export const PmmContextProvider = (props) => {
 
     const Get_Category = async () => {
         try {
-            const res = await fetch('http://muict.app/salad-pirate-backend/categories', {
+            const res = await fetch('https://muict.app/salad-pirate-backend/categories', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export const PmmContextProvider = (props) => {
 
     const Get_Transaction = async () =>{
         try {
-            const res = await fetch('http://muict.app/salad-pirate-backend/transactions', {
+            const res = await fetch('https://muict.app/salad-pirate-backend/transactions', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",

@@ -44,7 +44,7 @@ export function Settings_PPM({
 
             try {
                 if (editingCategory) {
-                    res = await fetch(`http://muict.app/salad-pirate-backend/categories/${parseInt(editingCategory.categoryId)}`, {
+                    res = await fetch(`https://muict.app/salad-pirate-backend/categories/${parseInt(editingCategory.categoryId)}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export function Settings_PPM({
                         body: JSON.stringify(formData),
                     });
                 } else {
-                    res = await fetch('http://muict.app/salad-pirate-backend/categories', {
+                    res = await fetch('https://muict.app/salad-pirate-backend/categories', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ export function Settings_PPM({
 
             try {
                 if (editingPayment) {
-                    res = await fetch(`http://muict.app/salad-pirate-backend/payment-methods/${parseInt(editingPayment.paymentMethodId)}`, {
+                    res = await fetch(`https://muict.app/salad-pirate-backend/payment-methods/${parseInt(editingPayment.paymentMethodId)}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ export function Settings_PPM({
                         body: JSON.stringify(formData),
                     });
                 } else {
-                    res = await fetch('http://muict.app/salad-pirate-backend/payment-methods', {
+                    res = await fetch('https://muict.app/salad-pirate-backend/payment-methods', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -288,7 +288,7 @@ export function Settings_PPM({
         if (!window.confirm('Are you sure you want to delete this category?')) return;
 
         try {
-            const res = await fetch(`http://muict.app/salad-pirate-backend/categories/${categoryId}`, {
+            const res = await fetch(`https://muict.app/salad-pirate-backend/categories/${categoryId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-User-id': parseInt(user?.id),
@@ -317,7 +317,7 @@ export function Settings_PPM({
         }
 
         try {
-            const res = await fetch(`http://muict.app/salad-pirate-backend/payment-methods/${parseInt(paymentId, 10)}`, {
+            const res = await fetch(`https://muict.app/salad-pirate-backend/payment-methods/${parseInt(paymentId, 10)}`, {
                 method: 'DELETE',
                 headers: {
                     'X-User-id': parseInt(user?.id),
@@ -354,7 +354,7 @@ export function Settings_PPM({
 
             try {
                 if (editingWallet) {
-                    res = await fetch(`http://muict.app/salad-pirate-backend/wallets/${parseInt(editingWallet.walletId)}`, {
+                    res = await fetch(`https://muict.app/salad-pirate-backend/wallets/${parseInt(editingWallet.walletId)}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -366,7 +366,7 @@ export function Settings_PPM({
                         }),
                     });
                 } else {
-                    res = await fetch('http://muict.app/salad-pirate-backend/wallets', {
+                    res = await fetch('https://muict.app/salad-pirate-backend/wallets', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -506,7 +506,7 @@ export function Settings_PPM({
         if (!window.confirm('Are you sure you want to delete this wallet?')) return;
 
         try {
-            const res = await fetch(`http://muict.app/salad-pirate-backend/wallets/${parseInt(walletId)}`, {
+            const res = await fetch(`https://muict.app/salad-pirate-backend/wallets/${parseInt(walletId)}`, {
                 method: 'DELETE',
                 headers: {
                     'X-User-id': parseInt(user?.id),

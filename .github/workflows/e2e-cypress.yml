@@ -52,6 +52,7 @@ jobs:
       - name: Start Next.js
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8080
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           cd pmm_app
           nohup npm run dev -- -p 3000 > fe.log 2>&1 &
@@ -111,4 +112,6 @@ jobs:
           push: true
           tags: |
             ${{ steps.vars.outputs.latest }}
-            ${{ steps.vars.outputs.sha }}
+            ${{ steps.vars.outputs.sha }
+          build-args: |
+            GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}

@@ -146,7 +146,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
 
     let res;
     try {
-      res = await fetch('http://muict.app/salad-pirate-backend/transactions', {
+      res = await fetch('https://muict.app/salad-pirate-backend/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
                   : wallet.balance + transactionAmount;
 
               const res = await fetch(
-                `http://muict.app/salad-pirate-backend/wallets/${parseInt(wallet.walletId)}`,
+                `https://muict.app/salad-pirate-backend/wallets/${parseInt(wallet.walletId)}`,
                 {
                   method: "PUT",
                   headers: {
@@ -231,7 +231,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
     if (newWalletData.name.trim() === '') return;
 
     try {
-      const res = await fetch('http://muict.app/salad-pirate-backend/wallets', {
+      const res = await fetch('https://muict.app/salad-pirate-backend/wallets', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
