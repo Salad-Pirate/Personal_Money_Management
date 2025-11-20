@@ -112,6 +112,6 @@ jobs:
           push: true
           tags: |
             ${{ steps.vars.outputs.latest }}
-            ${{ steps.vars.outputs.sha }
+            ${{ steps.vars.outputs.sha }}
           build-args: |
             GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
