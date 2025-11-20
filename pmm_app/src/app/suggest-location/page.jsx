@@ -27,7 +27,7 @@ const Suggest = () => {
         return R * c;
     }
 
-    function filterNearbyLocations(currentLat, currentLng, transactions, maxDistanceKm = 50) {
+    function filterNearbyLocations(currentLat, currentLng, transactions, maxDistanceKm = 5) {
         return transactions
             .map(tx => ({
                 ...tx,
