@@ -94,7 +94,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
   async function geocode(placeName, currentLat, currentLng) {
 
     try {
-      const res = await fetch(`/api/geocode?query=${placeName}`);
+      const res = await fetch(`/salad-pirate-frontend/api/geocode?query=${placeName}`);
       const data = await res.json();
       console.log("@####### Data from google map",data)
       if (data.status !== "OK" || data.results.length === 0) {
@@ -214,7 +214,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
             wallet: updatedWallets[0] || null,
           }
         )
-        // window.location.reload();
+        window.location.reload();
       } else {
         alert("UnSuccessful");
         console.log("Error ", res);
