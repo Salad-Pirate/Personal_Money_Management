@@ -10,6 +10,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [lat, setLat] = useState(null);
   const [lng, setLng] = useState(null);
+  const [note,setNote] = useState("");
 
   const [user] = useLocalStorage("currentUser", null);
   const { user_Wallet, setUserWallet } = useContext(PmmContext);
@@ -138,7 +139,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
       type: transactionType,
       occuredAt: formatDateForBackend(formData.date),
       transactionLocation: formData.location,
-      note: formData.note,// ส่งเฉพาะ id ไป backend
+      note: note,// ส่งเฉพาะ id ไป backend
       latitude: geo.lat,
       longitude:geo.lng
 
@@ -214,6 +215,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
             wallet: updatedWallets[0] || null,
           }
         )
+        setNote('')
         window.location.reload();
       } else {
         alert("UnSuccessful");
@@ -287,11 +289,12 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
     console.log(res)
     const data = await res.json();
 
-    // Update React state correctly
-  setFormData(prev => ({
-    ...prev,
-    note: data.text
-  }));
+  //   // Update React state correctly
+  // setFormData(prev => ({
+  //   ...prev,
+  //   note: data.text
+  // }));
+    setNote(data.text)
     setLoading(false);
 
 
@@ -595,8 +598,8 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
               <div className="relative">
                 <FileText className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <textarea
-                  value={formData.note}
-                  onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
                   rows={3}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   placeholder="Add any additional notes..."
