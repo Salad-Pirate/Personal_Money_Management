@@ -279,7 +279,7 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("/api/ocr", {
+    const res = await fetch("/salad-pirate-frontend/api/ocr", {
       method: "POST",
       body: formData,
     });
