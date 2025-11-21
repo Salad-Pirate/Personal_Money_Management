@@ -276,18 +276,22 @@ export function AddTransaction({ categories, paymentMethods, onCancel }) {
     if (!file) return;
 
     setLoading(true);
-    const formData = new FormData();
-    formData.append("file", file);
+    const uploadForm = new FormData();
+    uploadForm.append("file", file);
 
     const res = await fetch("/salad-pirate-frontend/api/ocr", {
       method: "POST",
-      body: formData,
+      body: uploadForm,
     });
     console.log("Return from OCR ######### ")
     console.log(res)
     const data = await res.json();
 
-    setFormData({ ...formData, note: data.text })
+    // Update React state correctly
+  setFormData(prev => ({
+    ...prev,
+    note: data.text
+  }));
     setLoading(false);
 
 
